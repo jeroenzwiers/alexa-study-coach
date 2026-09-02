@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+experiments/chess_results_*.jsonl
+
+# Internal strategy and an abandoned line of enquiry - deliberately not published
+PLAN.md
+experiments/
+preview/preview.html
