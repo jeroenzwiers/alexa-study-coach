@@ -1,0 +1,234 @@
+# Friction log
+
+Product feedback on the tools used to build Study Coach: the Alexa+ MCP Toolkit
+and its documentation, the MCP Python SDK 2.x, and the MCP Apps extension
+(SEP-2133).
+
+**How this was kept.** Each item was written down at the moment it cost us
+something, not reconstructed afterwards, which is why some entries record a
+five-minute annoyance and one records an hour.
+
+Items 1, 2 and 5–8 were logged on 2 September 2026 while building the server,
+as were the three observations in *What worked well*. Items 3 and 4 were
+established on 3 September 2026 by re-reading the toolkit documentation while
+designing a feature that turned out to rest on behaviour the documentation does
+not describe; both quotations there were checked against the live pages that
+day.
+
+Items are grouped by tool and ordered within each group by what they cost. The
+last section is what worked well, because a log that only complains is not
+feedback — and in one case the SDK already does the right thing in the code path
+next door to the one that doesn't.
+
+---
+
+## Alexa+ MCP Toolkit — getting to a working environment
+
+### 1. The CLI is not where the documentation implies it is
+
+`npm install -g @alexa-ai/cli` fails with `E404` against public npm. The package
+lives in a private AWS CodeArtifact repository, reachable only from an AWS
+account that can assume
+`arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead`.
+
+The environment setup page presents the install as a step in a sequence. It is
+not a step; it is a gate. A developer without an AWS account, or with one that
+lacks that role, cannot begin — and finds out only after following several pages
+of instructions that appeared to be working.
+
+**Cost:** this is the single largest distance between "read the docs" and "have
+something running", and it is invisible until you hit it.
+
+**Fix:** state the prerequisite in the first paragraph of the setup page, above
+the first command — what the role is, how to check whether you have it, and what
+to do if you don't. An `E404` from npm is the least informative possible signal
+for an authorisation problem.
+
+### 2. The CodeArtifact token expires in 12 hours, and the failure looks like a broken package
+
+Once the token lapses, subsequent installs fail in a way that reads as a
+packaging or registry problem rather than an expired credential. The fix — run
+`aws codeartifact login` again — is not suggested by the error.
+
+**Fix:** put the 12-hour lifetime next to the login command rather than further
+down the page, and show the expired-token error text so it is searchable.
+
+---
+
+## Alexa+ MCP Toolkit — the contract between Alexa+ and the server
+
+These two cost us design decisions rather than debugging time, which makes them
+more expensive than they look.
+
+### 3. The documentation does not say what a tool call actually carries
+
+The overview explains that Alexa+ handles natural language understanding,
+response generation and UI rendering, and that the server receives tool calls.
+It does not say what accompanies a request:
+
+- Is any stable user or household identity available to the server?
+- Is the locale passed?
+- Is `_meta` populated, and with what?
+- Is anything available about the utterance beyond the transcribed arguments?
+
+We needed the first of those, because Study Coach remembers which misconceptions
+a student left unsettled and opens the next session on them. With no documented
+identity, the student key had to become an ordinary tool argument — which means
+the feature works only if the assistant chooses to supply it, and degrades
+silently to a shared default profile if it does not.
+
+The fourth question shaped a feature outright. We wanted to adapt when a student
+is struggling. Since nothing documented carries audio or affect, we split the
+signal: the server reads the transcript and the timing, and asks Alexa+ for an
+optional note describing observable behaviour. That is a defensible design, and
+we would have reached it faster — and with more confidence — if a reference page
+had simply said what arrives.
+
+**Fix:** one page listing exactly what a tool invocation delivers to the server,
+marking each field guaranteed or best-effort. For a protocol whose whole promise
+is a clean contract, this is the page most conspicuously missing.
+
+### 4. Two different latency figures live on two different pages, and neither says where it is measured
+
+The binding number is in the **quickstart**, under Performance:
+
+> "Your MCP server must meet a round-trip query response latency of less than
+> 500 ms."
+
+The **functional requirements** page — the page whose name promises to hold the
+requirements — does not mention 500 ms at all. What it says about timing is:
+
+> "Return results within 3 seconds. If processing takes longer, surface an
+> interim message so the customer knows the system is working."
+
+So a developer who reads the requirements page for requirements comes away with
+a budget six times larger than the real one, and a suggestion to emit interim
+messages that the stricter figure leaves no room for. We only found the 500 ms
+because we read the quickstart after having already read the requirements.
+
+Neither figure says what is being measured. Between the student finishing
+speaking and Alexa beginning to reply there is ASR, Alexa's own reasoning, DNS,
+TLS, the network hop, possibly a Lambda cold start, and finally the handler.
+Which of those are inside the window?
+
+We engineered far inside it — 8.9 ms median round trip, 3.6 ms median for
+grading — precisely because we could not tell how much of the budget was ours to
+spend. That worked out, but it is a consequence of this project's shape rather
+than something the documentation enabled.
+
+**Fix:** put the 500 ms figure on the functional requirements page, reconcile it
+with the 3-second guidance or scope that guidance explicitly, and state what is
+timed and from where to where. A developer who knows they own 400 ms builds
+differently from one who assumes they own 50 — and differently again from one
+who thinks they have three seconds.
+
+---
+
+## MCP Python SDK 2.x
+
+### 5. Tools registered after the server is constructed vanish without an error
+
+`MCPServer(extensions=[...])` reads the extension **eagerly** in the
+constructor. `@apps.tool` decorators that run afterwards therefore register into
+an object the server has already copied from. The tools do not appear in
+`tools/list`. There is no exception, no warning, and no log line.
+
+The required order — register the UI resource, then the tools, then construct
+the server — is not stated in the `Apps` docstring. It is implicit in
+`_apply_extension`, which is private, so the answer is only reachable by reading
+source you have no reason to open.
+
+**Cost:** about an hour, most of it spent doubting the transport, because a
+short `tools/list` looks like a protocol problem rather than an ordering one.
+
+**Fix:** either capture extension tools lazily at first use, or raise when a tool
+is added to an extension already bound to a server. This is the most expensive
+item in this log and among the cheapest to fix. See item 10 — the SDK already
+does exactly this, correctly, one code path over.
+
+### 6. A tool annotated `-> dict` silently produces no output schema
+
+Returning a plain `dict` from a tool yields no `outputSchema` and no structured
+content. Nothing warns you. You discover it when the client receives text and
+nothing else, and then have to work out that an explicit pydantic model is
+required.
+
+This is not documented where you need it — on the `@tool` decorator — and the
+failure is silent in the same way as item 5.
+
+**Fix:** warn at registration time when a tool's return annotation cannot produce
+a schema, and say so on the decorator's own docstring.
+
+### 7. camelCase to snake_case, repeatedly, across unrelated types
+
+`serverInfo` → `server_info`, `protocolVersion` → `protocol_version`,
+`structuredContent` → `structured_content`, and later `Resource.mimeType` →
+`mime_type`.
+
+The individual error messages are genuinely good — `Did you mean: 'mime_type'?`
+is exactly right — but the pattern re-appears on each new type you touch, and
+each appearance costs another edit-run cycle. Knowing the rule does not help,
+because you cannot tell which types you have not yet hit.
+
+**Fix:** a single table in the 2.x migration notes listing every renamed field,
+not only the renamed classes. One page would have collapsed four separate
+discoveries into one read.
+
+### 8. `streamablehttp_client` → `streamable_http_client`, and the arity changed with it
+
+The rename is discoverable from the error. The accompanying change — the
+transport now yields a 2-tuple where it previously yielded 3 — is not: it
+surfaces as an unpacking error about values, which says nothing about the
+transport contract having changed.
+
+**Fix:** mention the shape change alongside the rename in the migration notes.
+A renamed symbol is a five-second fix; a silently re-shaped return value is not.
+
+---
+
+## MCP Apps extension (SEP-2133)
+
+### 9. The additive model is right, and worth saying out loud
+
+Binding `start_practice` and `submit_answer` to a `ui://` resource via
+`_meta.ui.resourceUri` while leaving every tool's spoken text intact meant a
+speaker with no display needed no special-casing anywhere in our code. The
+degradation is structural rather than something we had to remember to maintain.
+
+This deserves to be stated more prominently in the extension's own
+documentation. It is the property that makes the extension safe to adopt for a
+voice-first product, and it is currently something you infer rather than
+something you are told.
+
+---
+
+## What worked well
+
+### 10. The validation in item 5, done correctly, one path over
+
+Binding a tool to a `ui://` resource that has not been registered raises an
+explicit, solvable error naming the missing URI. It is precisely the behaviour
+item 5 is missing, in adjacent code. The SDK already knows how to catch this
+class of mistake; the extension-ordering path just doesn't.
+
+### 11. Streamable HTTP and version negotiation worked first time
+
+`2025-11-25` negotiated cleanly, and a single endpoint serving both POST and GET
+behaved as specified. No friction to report, which is worth recording precisely
+because it is the part most likely to have gone wrong.
+
+### 12. Error messages are consistently helpful where they exist
+
+Across items 6, 7 and 8, wherever the SDK raised at all, the message pointed
+somewhere useful — the migration guide, the correct field name, the right
+symbol. The gap in this SDK is not message quality. It is the two places where
+it stays silent.
+
+---
+
+## If we could ask for one thing
+
+A single reference page describing what a tool invocation delivers to the
+server, and what the 500 ms budget covers. Items 3 and 4 are the only two
+entries here that changed the shape of the product rather than costing us an
+afternoon, and both are documentation gaps rather than defects.

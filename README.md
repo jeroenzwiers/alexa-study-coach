@@ -162,7 +162,8 @@ time the answer has been graded.
 
 ## Why there is no model in the request path
 
-Alexa+ requires a round-trip under **500 ms**. A call to a language model costs
+The Alexa+ MCP quickstart requires a round-trip under **500 ms**. A call to a
+language model costs
 200–800 ms on its own, so it cannot live inside the answer path.
 
 It does not need to. Alexa+ already supplies the conversation and the reasoning;
@@ -260,6 +261,11 @@ harness/            the tests that decide whether any of this is true
   attribute an answer to something it knows about.
 - **Difficulty is three levels, hand-labelled in the content.** Enough to move
   between, not enough to be called a model of the student.
+
+## Friction log
+
+Product feedback on the Alexa+ MCP Toolkit, the MCP Python SDK and the MCP Apps
+extension, kept at the moment each thing cost us something: [`FRICTION.md`](FRICTION.md).
 
 ## Licence
 
