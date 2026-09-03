@@ -88,6 +88,40 @@ Two things fall out of that:
 2. Being wrong is no longer one bit. We know *which* concept was reached for —
    which is what everything above and below is built on.
 
+## Where the questions come from, and why that is the same problem
+
+The closed candidate set is what makes the diagnosis possible, and it is also
+the thing a badly built study set destroys. If a student answers *chloroplasts*
+and no card in the set has *chloroplasts* as an answer, there is nothing to
+attribute it to: the grade comes back `ambiguous`, the coach says "I didn't
+catch that", and no confusion is ever found. The questions look fine. The
+feature is dead.
+
+So `tools/build_study_set.py` does not generate twenty questions. It is asked to
+build the set **around the confusions** — which concepts students actually swap,
+and in which direction — and to put both halves of every pair in the set. The
+confusion graph is the artefact; the questions are how it is delivered. It runs
+offline against `claude-opus-5`, never in the request path.
+
+And then the model's work is checked by the code that has to live with it.
+`tools/verify_study_set.py` runs every set through the **real `grading.grade`**
+that serves live traffic:
+
+| check | what it catches |
+|---|---|
+| own phrasings | a card whose own answer does not attribute to it — an unanswerable question |
+| **cross-attribution** | saying card A's answer to card B's question must still be attributed to A. This is the diagnosis in one assertion: it is how the coach knows the student said *chloroplasts* rather than merely *not mitochondria* |
+| collisions | two cards accepting the same words, which makes attribution a coin flip |
+| structure | difficulty out of range, a missing misconception line, a distractor label pointing nowhere |
+
+A generated set that fails is reported and not written. The model proposes; the
+grader decides.
+
+The hand-written set that ships passes the same gate — 42 accepted phrasings and
+**504 cross-attributions, all landing on the right card** — and
+`harness/test_content.py` keeps it that way, using deliberately broken sets to
+prove the checker still fires.
+
 ## It remembers the student, not the score
 
 Sessions end. Misconceptions don't. So what survives a session is the diagnosis:
@@ -249,6 +283,7 @@ Then, in another shell:
 .venv/Scripts/python harness/test_memory.py        # does it remember across sessions?
 .venv/Scripts/python harness/test_adaptive.py      # does it read the student?
 .venv/Scripts/python harness/test_topic_map.py     # a synthetic class of nine
+.venv/Scripts/python harness/test_content.py       # is the study set itself sound?
 ```
 
 ## Layout
@@ -265,6 +300,9 @@ server/history.py   what survives a session - which confusions are open, which
 server/app.py       the MCP server: tools, OAuth metadata, health
 server/ui.py        the MCP Apps card rendered on devices with a display
 content/            study sets as plain JSON - the shape a worksheet becomes
+tools/              build_study_set.py   worksheet or topic -> a study set, built
+                                         around the confusions, offline
+                    verify_study_set.py  checks any set with the live grader
 harness/            the tests that decide whether any of this is true
 ```
 
@@ -285,6 +323,11 @@ harness/            the tests that decide whether any of this is true
   attribute an answer to something it knows about.
 - **Difficulty is three levels, hand-labelled in the content.** Enough to move
   between, not enough to be called a model of the student.
+- **The generator has not been run against the live API from this checkout.**
+  Its request shape, prompt and pydantic schema are exercised offline, and the
+  verification half runs on every set in `content/` — but the set that ships was
+  written by hand, and no generated set has been produced end to end yet. The
+  first real run needs an `ANTHROPIC_API_KEY`.
 
 ## Friction log
 
