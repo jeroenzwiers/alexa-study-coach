@@ -22,6 +22,7 @@ import datetime as _dt
 import json
 import pathlib
 import re
+from dataclasses import dataclass
 
 DATA_DIR = pathlib.Path(__file__).resolve().parents[1] / "data" / "students"
 
@@ -260,3 +261,104 @@ def _join(names: list[str]) -> str:
     if len(names) == 1:
         return names[0]
     return ", ".join(names[:-1]) + f", and {names[-1]}"
+
+
+# --- the same confusions, seen across everyone who studied the topic -------
+#
+# One student mixing osmosis up with diffusion is a fact about that student.
+# Nine students doing it, and six of them going the same way round, is a fact
+# about the TOPIC - and it is the one thing here a teacher cannot get from
+# marking, because marking records that an answer was wrong, not which other
+# idea was reached for.
+#
+# Everything below is aggregate by construction. It counts students per
+# confusion and never carries a student's identity out of this module: the
+# reports built on it can say "seven students" and cannot say which seven.
+# That is deliberate for a product whose users are children.
+
+# Below this, a "pattern across students" is one student with an opinion.
+MIN_STUDENTS = 2
+
+# A confusion counts as one-directional when this share of the students who
+# have it make the same swap. Two thirds, because the interesting claim is
+# "they nearly all go the same way", not "slightly more than half do".
+LOPSIDED = 2 / 3
+
+
+@dataclass(frozen=True)
+class TopicConfusion:
+    """One confusion, summed over every student who has met it."""
+
+    pair: tuple[str, str]
+    open_students: int
+    settled_students: int
+    directions: dict          # (asked_card, said_card) -> how many students
+
+    @property
+    def students(self) -> int:
+        return self.open_students + self.settled_students
+
+    def dominant_direction(self) -> tuple[tuple[str, str], int] | None:
+        """The way round most students get it, when most of them agree.
+
+        Returns None when the swap goes both ways roughly evenly - which is
+        itself worth knowing, and worth not overstating.
+        """
+        if not self.directions:
+            return None
+        way, count = max(self.directions.items(), key=lambda kv: kv[1])
+        total = sum(self.directions.values())
+        return (way, count) if total and count / total >= LOPSIDED else None
+
+
+def all_profiles() -> list[dict]:
+    """Every stored profile. On Lambda this is a scan; here it is a directory."""
+    if not DATA_DIR.exists():
+        return []
+    out = []
+    for path in sorted(DATA_DIR.glob("*.json")):
+        try:
+            out.append(json.loads(path.read_text(encoding="utf-8")))
+        except (json.JSONDecodeError, OSError):
+            continue          # one unreadable profile must not lose the rest
+    return out
+
+
+def topic_map(study_set_id: str, profiles: list[dict] | None = None) -> tuple[int, list[TopicConfusion]]:
+    """Aggregate confusions over every student who has practised a study set.
+
+    Returns how many students have practised it, and its confusions ordered by
+    how many students hit them.
+    """
+    studied = 0
+    tally: dict[tuple[str, str], dict] = {}
+
+    for profile in (all_profiles() if profiles is None else profiles):
+        record = profile.get("sets", {}).get(study_set_id)
+        if not record or not record.get("sessions"):
+            continue
+        studied += 1
+
+        seen: set[tuple[str, str]] = set()
+        for state, entries in (
+            ("open", record.get("open_confusions", {})),
+            ("settled", record.get("resolved_confusions", {})),
+        ):
+            for flat, entry in entries.items():
+                pair = tuple(flat.split("|"))
+                if len(pair) != 2 or pair in seen:
+                    continue      # a pair counts once per student, not once per row
+                seen.add(pair)
+                slot = tally.setdefault(pair, {"open": 0, "settled": 0, "dirs": {}})
+                slot[state] += 1
+                way = (entry.get("asked"), entry.get("said"))
+                if all(way):
+                    slot["dirs"][way] = slot["dirs"].get(way, 0) + 1
+
+    confusions = [
+        TopicConfusion(pair=pair, open_students=slot["open"],
+                       settled_students=slot["settled"], directions=slot["dirs"])
+        for pair, slot in tally.items()
+    ]
+    confusions.sort(key=lambda c: (-c.students, -c.open_students, c.pair))
+    return studied, confusions

@@ -619,6 +619,97 @@ def student_progress(student: str = "default", study_set_id: str = "") -> str:
     return " ".join(lines)
 
 
+@server.tool(
+    title="Class report",
+    description=(
+        "For a teacher or tutor: which confusions keep coming up across ALL the "
+        "students who have practised a study set, how many have settled them, "
+        "and whether the swap goes both ways or mostly one way. Aggregate only - "
+        "it reports counts, never who."
+    ),
+)
+def class_report(study_set_id: str = "", minimum: int | None = None) -> str:
+    study_set = store.STUDY_SETS.get(study_set_id) or next(iter(store.STUDY_SETS.values()), None)
+    if study_set is None:
+        return "There are no study sets loaded yet."
+
+    floor = profiles.MIN_STUDENTS if minimum is None else max(1, minimum)
+    studied, confusions = profiles.topic_map(study_set.id)
+
+    if not studied:
+        return f"No one has practised {study_set.title} yet."
+
+    who = f"{_number(studied)} student{'s' if studied != 1 else ''}"
+    shared = [c for c in confusions if c.students >= floor]
+    if not shared:
+        return (
+            f"{who.capitalize()} {'have' if studied != 1 else 'has'} practised "
+            f"{study_set.title}. No confusion is shared by more than "
+            f"{_number(floor - 1)} of them yet."
+        )
+
+    top = shared[0]
+    parts = [
+        f"{who.capitalize()} {'have' if studied != 1 else 'has'} practised "
+        f"{study_set.title}.",
+        f"One confusion stands out: {_pair_phrase(study_set, top)}."
+        if len(shared) > 1 else f"One confusion is shared: {_pair_phrase(study_set, top)}.",
+    ]
+
+    # The asymmetry is the teachable part. "They confuse these two" tells you to
+    # revise both; "they nearly all answer diffusion when asked about osmosis"
+    # tells you which half of the distinction is missing.
+    lopsided = top.dominant_direction()
+    if lopsided is not None:
+        (asked_id, said_id), count = lopsided
+        asked, said = study_set.card(asked_id), study_set.card(said_id)
+        if asked is not None and said is not None:
+            parts.append(
+                f"{_number(count).capitalize()} of them go the same way: asked "
+                f"about {asked.canonical.rstrip('.').lower()}, they answer "
+                f"{said.canonical.rstrip('.').lower()}."
+            )
+    elif top.directions:
+        parts.append("It goes both ways round in roughly equal numbers.")
+
+    if top.settled_students:
+        parts.append(
+            f"{_number(top.settled_students).capitalize()} "
+            f"{'have' if top.settled_students != 1 else 'has'} since settled it."
+        )
+
+    if len(shared) > 1:
+        rest = [
+            f"{_pair_phrase(study_set, c)}"
+            for c in shared[1:3]
+        ]
+        parts.append("Also recurring: " + _topics_from(rest) + ".")
+
+    return " ".join(parts)
+
+
+def _pair_phrase(study_set, confusion) -> str:
+    """A confusion named, with how many students have met it."""
+    a, b = (study_set.card(cid) for cid in confusion.pair)
+    if a is None or b is None:
+        return "an answer no longer in this set"
+    return (
+        f"{a.canonical.rstrip('.').lower()} and {b.canonical.rstrip('.').lower()}, "
+        f"{_number(confusion.students)} student{'s' if confusion.students != 1 else ''}"
+    )
+
+
+_NUMBER_WORDS = (
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "eleven", "twelve",
+)
+
+
+def _number(n: int) -> str:
+    """Small counts as words. A voice saying "7" sounds like a form, not a person."""
+    return _NUMBER_WORDS[n] if 0 <= n < len(_NUMBER_WORDS) else str(n)
+
+
 def _topics(study_set, card_ids: list[str]) -> str:
     names = [study_set.card(cid).canonical.rstrip(".") for cid in card_ids if study_set.card(cid)]
     return _topics_from(names)

@@ -107,6 +107,27 @@ goes back on the open list rather than being quietly forgotten.
 `student_progress` reads the same record across sessions: what has been settled
 for good, and what is still open.
 
+## The same confusion, across students, is a fact about the topic
+
+One student mixing osmosis up with diffusion is a fact about that student. Nine
+students doing it is a fact about the material:
+
+> *Nine students have practised The Cell. One confusion stands out: osmosis and
+> diffusion, seven students. Six of them go the same way: asked about osmosis,
+> they answer diffusion. Three have since settled it.*
+
+That last-but-one sentence is the useful one. "They confuse these two" tells a
+teacher to revise both. "Six of them answer diffusion when asked about osmosis"
+tells them **which half of the distinction is missing** — and no marking
+produces it, because marking records that an answer was wrong, not which other
+idea was reached for.
+
+It is aggregate by construction. `class_report` counts students per confusion
+and never carries an identity out of `history.py`: it can say *seven students*
+and cannot say which seven. For a product whose users are children, that is a
+design constraint rather than a feature. A confusion held by one student alone
+is counted but never reported as a pattern.
+
 ## It reads how the answer arrived, not just whether it was right
 
 A tutor pushes when it is all going in too easily and backs off when the student
@@ -207,6 +228,7 @@ at all.
 | `session_summary` | how the session went |
 | `tutor_report` | the pattern behind the errors, for a parent or tutor |
 | `student_progress` | what is settled and what is still open, across sessions |
+| `class_report` | which confusions recur across every student who studied a set |
 
 `start_practice` and `submit_answer` are bound to `ui://study-coach/practice.html`.
 
@@ -226,6 +248,7 @@ Then, in another shell:
 .venv/Scripts/python harness/test_diagnosis.py     # does it diagnose, and settle?
 .venv/Scripts/python harness/test_memory.py        # does it remember across sessions?
 .venv/Scripts/python harness/test_adaptive.py      # does it read the student?
+.venv/Scripts/python harness/test_topic_map.py     # a synthetic class of nine
 ```
 
 ## Layout
@@ -237,7 +260,8 @@ server/store.py     study sets, sessions, confusion tracking, contrast drilling,
                     resolution, and adaptive card selection
 server/adaptive.py  reading how an answer arrived: strain, ease, and what to do
 server/history.py   what survives a session - which confusions are open, which
-                    are settled, and roughly where the student's level sits
+                    are settled, where the student's level sits, and the same
+                    confusions summed across every student who studied a set
 server/app.py       the MCP server: tools, OAuth metadata, health
 server/ui.py        the MCP Apps card rendered on devices with a display
 content/            study sets as plain JSON - the shape a worksheet becomes

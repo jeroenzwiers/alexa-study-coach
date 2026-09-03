@@ -122,8 +122,9 @@ async def main() -> None:
     worst = max(timings)
     checks = {
         "protocolversie 2025-11-25": str(init.protocol_version) == "2025-11-25",
-        "zeven tools aangeboden": len(names) == 7,
+        "acht tools aangeboden": len(names) == 8,
         "student_progress bestaat": "student_progress" in names,
+        "class_report bestaat": "class_report" in names,
         "sessie afgerond": bool(payload.get("finished")),
         "contrastvraag over de lijn": saw_contrast,
         "verwarring opgelost gemeld": saw_resolution,
