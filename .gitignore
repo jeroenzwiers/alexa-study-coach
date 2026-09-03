@@ -8,3 +8,6 @@ experiments/chess_results_*.jsonl
 PLAN.md
 experiments/
 preview/preview.html
+
+# Student profiles written by history.py - real practice data, not source.
+data/

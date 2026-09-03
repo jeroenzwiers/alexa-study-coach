@@ -2,9 +2,13 @@
 
 Voice carries the session; this is what a device with a display shows while it
 happens. It deliberately does not transcribe the speech - repeating spoken words
-on screen adds nothing. It shows the one thing a voice cannot: when a student
+on screen adds nothing. It shows the things a voice cannot: when a student
 keeps mixing two concepts up, the two are put side by side, which is what makes
-the confusion visible instead of merely stated.
+the confusion visible instead of merely stated - and when the pair is finally
+told apart, that lands as a result on screen rather than passing by in a
+sentence. The level indicator does the same job for the session's difficulty:
+a step up or down is a fact about the last few answers, and a row of pips shows
+it at a glance where speech would have to keep announcing it.
 
 Rendered by the host in a sandboxed iframe via the MCP Apps extension. Per
 SEP-2133 the tools stay fully usable without it - a speaker with no screen loses
@@ -74,6 +78,29 @@ PRACTICE_HTML = """<!DOCTYPE html>
   .vs { align-self: center; color: var(--muted); font-size: 13px; font-weight: 600;
         text-transform: uppercase; letter-spacing: .06em; padding: 0 2px; }
   .note { margin-top: 16px; font-size: 14px; color: var(--muted); }
+
+  /* The payoff: a confusion that has stopped being one. */
+  .settled { display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+             padding: 14px 16px; border-radius: 12px;
+             background: var(--good-bg); border: 1px solid var(--good); }
+  .settled .tick { flex: none; width: 22px; height: 22px; border-radius: 50%;
+                   background: var(--good); color: var(--good-bg); font-size: 14px;
+                   display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .settled b { color: var(--good); font-weight: 650; }
+  .settled span { color: var(--ink); font-size: 15px; }
+
+  /* Where the session has decided to pitch itself. */
+  .meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+          font-size: 12px; color: var(--muted); letter-spacing: .03em; }
+  .pips { display: inline-flex; gap: 4px; }
+  .pips i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .pips i.on { background: var(--accent); }
+  .badge { padding: 3px 9px; border-radius: 999px; background: var(--card);
+           border: 1px solid var(--line); text-transform: uppercase;
+           letter-spacing: .06em; font-weight: 600; }
+  .badge.ease { color: var(--unsure); background: var(--unsure-bg); border-color: transparent; }
+  .badge.stretch { color: var(--accent); }
+  .returning { color: var(--muted); font-size: 13px; margin: -8px 0 16px; }
   .idle { color: var(--muted); font-size: 15px; }
   @media (max-width: 520px) {
     body { padding: 20px; }
@@ -107,6 +134,27 @@ function render(turn) {
       </div>`);
   }
 
+  // A confusion just told apart twice running. Voice says it once and it is
+  // gone; on screen it stays for the turn.
+  if (Array.isArray(turn.resolved_confusion) && turn.resolved_confusion.length === 2) {
+    parts.push(`<div class="settled">
+        <div class="tick">&#10003;</div>
+        <span><b>Sorted.</b> ${esc(turn.resolved_confusion[0])} and
+          ${esc(turn.resolved_confusion[1])} - told apart, both ways round.</span>
+      </div>`);
+  }
+
+  if (turn.difficulty) {
+    const pips = [1, 2, 3]
+      .map((n) => `<i class="${n <= turn.difficulty ? "on" : ""}"></i>`).join("");
+    const bits = [`<span class="pips">${pips}</span>`, `Level ${turn.difficulty}`];
+    if (turn.momentum === "ease") bits.push(`<span class="badge ease">easing off</span>`);
+    if (turn.momentum === "stretch") bits.push(`<span class="badge stretch">stepping up</span>`);
+    if (turn.support === "hint") bits.push(`<span class="badge">hint given</span>`);
+    if (turn.support === "options") bits.push(`<span class="badge">two options</span>`);
+    parts.push(`<div class="meta">${bits.join("")}</div>`);
+  }
+
   if (turn.verdict) {
     const label = { correct: "Correct", incorrect: "Not quite", unclear: "Didn't catch that" }[turn.verdict];
     const heard = turn.heard_as ? `<small>you said ${esc(turn.heard_as)}</small>` : "";
@@ -119,6 +167,10 @@ function render(turn) {
 
   if (turn.question) {
     parts.push(`<h1>${esc(turn.question)}</h1>`);
+  }
+
+  if (turn.returning && turn.question_number === 1) {
+    parts.push(`<p class="returning">Picking up where you left off.</p>`);
   }
 
   // A repeated confusion, shown as the two things being confused.

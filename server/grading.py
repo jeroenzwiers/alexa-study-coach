@@ -32,6 +32,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from difflib import SequenceMatcher
+from functools import lru_cache
 
 import jellyfish
 
@@ -127,22 +128,50 @@ def has_negation(text: str) -> bool:
     return bool(ACTIVE.negations & set(tokens(text)))
 
 
+@dataclass(frozen=True)
+class _Prepared:
+    """One string, reduced to the three forms the comparison needs."""
+    raw: str        # normalised
+    content: str    # content words only, spaces stripped
+    key: str        # phonetic code
+
+
+@lru_cache(maxsize=4096)
+def _prepare(text: str) -> _Prepared:
+    """Reduce a string once.
+
+    Every answer is compared against every candidate in the study set - 42 of
+    them for a thirteen-card set - and the candidate texts are the same on every
+    single call. Recomputing the normalisation and the metaphone code per
+    comparison made grading scale with the size of the set for no reason.
+    """
+    return _Prepared(
+        raw=normalise(text),
+        content=_content_string(text).replace(" ", ""),
+        key=phonetic_key(text),
+    )
+
+
+def _similarity(said: _Prepared, target: _Prepared) -> float:
+    scores = [
+        SequenceMatcher(None, said.raw, target.raw).ratio(),
+        SequenceMatcher(None, said.content, target.content).ratio(),
+    ]
+    if said.key and target.key:
+        scores.append(
+            1.0 if said.key == target.key
+            else SequenceMatcher(None, said.key, target.key).ratio()
+        )
+    return max(scores)
+
+
 def similarity(said: str, target: str) -> float:
     """How likely is it that the student uttered `target`?
 
     Maximum of a spelling comparison and a sound comparison: the first catches
     typed or cleanly-recognised answers, the second catches phonetic mangling.
     """
-    a, b = normalise(said), normalise(target)
-    ac, bc = _content_string(said), _content_string(target)
-    scores = [
-        SequenceMatcher(None, a, b).ratio(),
-        SequenceMatcher(None, ac.replace(" ", ""), bc.replace(" ", "")).ratio(),
-    ]
-    ka, kb = phonetic_key(said), phonetic_key(target)
-    if ka and kb:
-        scores.append(1.0 if ka == kb else SequenceMatcher(None, ka, kb).ratio())
-    return max(scores)
+    return _similarity(_prepare(said), _prepare(target))
 
 
 @dataclass(frozen=True)
@@ -173,12 +202,16 @@ def grade(response: str, candidates: list[Candidate]) -> Grade:
         return Grade(False, "negated", 0.0, 0.0, None)
 
     said_set = content_tokens(response)
+    said_prepared = _prepare(response)
 
     def best_of(correct: bool) -> tuple[float, Candidate | None]:
         pool = [c for c in candidates if c.correct is correct]
         if not pool:
             return 0.0, None
-        return max(((similarity(response, c.text), c) for c in pool), key=lambda p: p[0])
+        return max(
+            ((_similarity(said_prepared, _prepare(c.text)), c) for c in pool),
+            key=lambda p: p[0],
+        )
 
     # Fast path: the student said an answer verbatim, or wrapped it in filler
     # ("I think it's the mitochondria"). Prefer a correct candidate when several
