@@ -120,7 +120,22 @@ signal is split, each half where it belongs:
 | | |
 |---|---|
 | **observed here** | hesitation and give-up markers in the transcript, how long the answer took once Alexa's own speaking time is subtracted, and the run of right and wrong |
-| **asked of Alexa+** | an optional `manner` argument on `submit_answer` — Alexa+ *did* hear the student, so the tool description invites it to say how they sounded |
+| **asked of Alexa+** | an optional `manner` argument on `submit_answer` — Alexa+ *did* hear the student, so the tool description invites it to report what the student **did**: "long pause before answering", "asked to stop", "answered instantly" |
+
+`manner` carries **observable behaviour, never an emotion label** — and the
+server declines an emotion word even when one is handed over willingly. That is
+a deliberate line, for two reasons.
+
+It works better. "Paused for eight seconds, then asked to move on" is something
+the platform can actually observe. "Frustrated" is a guess about an inner state,
+and Recital 44 of the EU AI Act is blunt about how well those guesses
+generalise.
+
+It stays inside the law. Article 5(1)(f) prohibits AI systems that infer a
+person's emotions in the workplace or in education, in force since 2 February
+2025, with only medical and safety exceptions. A revision coach sits squarely in
+that domain. Reading what a student *did* is not inferring what they *felt*, and
+keeping the two apart is what lets this feature exist at all.
 
 `manner` is a hint that sharpens the read, never a requirement. Everything works
 with it absent, the same way the screen card is additive to the voice — and
@@ -235,9 +250,9 @@ harness/            the tests that decide whether any of this is true
   Dutch version needs a Dutch phonetic coder, which is real work and untestable
   on a platform that is not here yet.
 - **`manner` is unverified against the real platform.** The tool description
-  invites Alexa+ to describe how the student sounded, and Alexa+ is free to
-  ignore it. That is why nothing depends on it, and why the adaptive tests run
-  the whole arc without it.
+  invites Alexa+ to describe what the student did, and Alexa+ is free to ignore
+  it, or to send an emotion label anyway — which the server drops. That is why
+  nothing depends on it, and why the adaptive tests run the whole arc without it.
 - **Student profiles are JSON on disk.** Fine locally, and fenced behind
   `history.load` / `history.save` so Lambda can swap in DynamoDB on the same
   student key. Live sessions are still in memory, keyed by the MCP session id.

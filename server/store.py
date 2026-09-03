@@ -161,7 +161,7 @@ class Session:
     # How the student is coping, not just how they are scoring - see adaptive.py.
     difficulty: int = 1
     scaffold: int = 0
-    frustration: float = 0.0
+    strain: float = 0.0
     correct_streak: int = 0
     wrong_streak: int = 0
     asked_at: float | None = None      # when the current question was handed over

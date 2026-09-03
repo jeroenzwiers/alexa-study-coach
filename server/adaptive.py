@@ -17,11 +17,13 @@ rest:
                      how long the answer took, and the run of right and wrong.
     asked of Alexa+  an optional `manner` argument on submit_answer. Alexa+ did
                      hear the student, so the tool description invites it to
-                     report how they sounded. It is a hint that sharpens the
-                     read, never a requirement: every rule below works with it
-                     absent, the same way the screen card is additive to voice.
+                     report what the student DID - paused, asked to stop,
+                     answered instantly - and never how they felt. It is a hint
+                     that sharpens the read, never a requirement: every rule
+                     below works with it absent, the same way the screen card is
+                     additive to voice.
 
-That split is the honest version of "notice the frustration in their voice", and
+That split is the honest version of "notice that the student is struggling",
 it puts each half where it belongs: perception with the platform that has the
 audio, policy with the server that has the history.
 
@@ -54,15 +56,44 @@ _GIVE_UP = (
     "pass on this", "next one", "can we stop", "i'm done", "im done",
 )
 
-# Words Alexa+ might reach for in `manner`. Matched as substrings so that
-# "sounding quite frustrated" lands on "frustrat".
-_MANNER_DISTRESS = ("frustrat", "annoy", "irritat", "upset", "angry", "cross",
-                    "defeat", "discourag", "deflat", "tired", "weary", "flat",
-                    "sigh", "despond", "fed up", "giving up", "close to tears")
-_MANNER_EASE = ("confident", "quick", "instant", "certain", "sure", "bright",
-                "cheerful", "eager", "bored", "unchallenged", "breezy", "easy")
-_MANNER_HESITANT = ("hesitant", "unsure", "uncertain", "tentative", "doubt",
-                    "hedging", "long pause", "paused", "slowly", "trailing off")
+# What Alexa+ may report in `manner`. These are DELIBERATELY descriptions of
+# observable conversational behaviour, not emotion labels: "long pause",
+# "asked to stop", "answered instantly". Two reasons, and the second is the
+# binding one.
+#
+#   It works better. "Paused for eight seconds and then asked to move on" is
+#   something the platform can actually observe. "Frustrated" is a guess about
+#   an inner state, and Recital 44 of the EU AI Act is blunt about how well
+#   those guesses generalise.
+#
+#   It stays inside the law. Article 5(1)(f) prohibits AI systems that infer
+#   emotions of a person in the workplace or in education, in force since
+#   2 February 2025, with only medical and safety exceptions. A revision coach
+#   is squarely in that domain. Reading behaviour is not inferring emotion, and
+#   this module never acts on an emotion word even if one arrives.
+#
+# The signal is not weaker for it. Everything the session needs to decide - push,
+# hold, or ease off - is carried by what the student DID.
+_MANNER_EFFORTFUL = (
+    "long pause", "paused", "pause before", "silence", "went quiet", "no answer",
+    "took a while", "took a long time", "slow to answer", "slowly", "very slow",
+    "trailing off", "tailed off", "false start", "started over", "restarted",
+    "several attempts", "asked to stop", "asked for a break", "wants to stop",
+    "asked to move on", "asked to skip", "gave up", "giving up",
+    "asked me to repeat", "repeated the question", "mumbled", "muttered",
+    "sighed", "sigh",
+)
+_MANNER_FLUENT = (
+    "instant", "instantly", "immediately", "straight away", "right away",
+    "without hesitating", "no hesitation", "no pause", "quick", "quickly",
+    "fast", "answered over", "interrupted", "before i finished",
+    "answered early", "steady", "fluent", "unprompted",
+)
+_MANNER_HESITANT = (
+    "hesitant", "hesitated", "tentative", "long pause", "paused", "pause before",
+    "trailing off", "tailed off", "false start", "restarted", "slowly",
+    "thinking out loud", "changed their answer", "changed the answer",
+)
 
 # Alexa reads the question aloud before the student can begin, so wall-clock
 # time between turns is mostly speech. Subtract an estimate of it before calling
@@ -76,10 +107,10 @@ _QUICK_THINKING_MS = 1800
 # Above this the student is struggling in a way worth acting on; below the lower
 # mark they are settled enough to be pushed. The gap between them is deliberate:
 # it stops the session oscillating between easier and harder every turn.
-FRUSTRATED = 0.60
+STRAINED = 0.60
 SETTLED = 0.25
 
-_DECAY = 0.72          # frustration fades as the session recovers
+_DECAY = 0.72          # strain eases as the session recovers
 _STRETCH_STREAK = 3    # consecutive correct answers before offering a step up
 
 MIN_DIFFICULTY = 1
@@ -98,13 +129,13 @@ class Signals:
     slow: bool = False
     quick: bool = False
     manner: str | None = None
-    manner_distress: bool = False
-    manner_ease: bool = False
+    manner_effortful: bool = False
+    manner_fluent: bool = False
     thinking_ms: int | None = None
 
     @property
     def strained(self) -> bool:
-        return self.gave_up or self.manner_distress or (self.hesitant and self.slow)
+        return self.gave_up or self.manner_effortful or (self.hesitant and self.slow)
 
 
 @dataclass(frozen=True)
@@ -114,7 +145,7 @@ class Adjustment:
     direction: str          # "ease", "stretch" or "hold"
     difficulty: int
     scaffold: int           # 0 ask plainly, 1 add a hint, 2 offer two options
-    frustration: float
+    strain: float
     line: str | None = None  # something to say about the change, if anything
 
 
@@ -153,8 +184,8 @@ def read_signals(
         quick = thinking_ms < _QUICK_THINKING_MS
 
     hint = (manner or "").lower()
-    manner_distress = any(k in hint for k in _MANNER_DISTRESS)
-    manner_ease = any(k in hint for k in _MANNER_EASE)
+    manner_effortful = any(k in hint for k in _MANNER_EFFORTFUL)
+    manner_fluent = any(k in hint for k in _MANNER_FLUENT)
     if any(k in hint for k in _MANNER_HESITANT):
         hesitant = True
 
@@ -165,13 +196,13 @@ def read_signals(
         slow=slow,
         quick=quick,
         manner=manner or None,
-        manner_distress=manner_distress,
-        manner_ease=manner_ease,
+        manner_effortful=manner_effortful,
+        manner_fluent=manner_fluent,
         thinking_ms=thinking_ms,
     )
 
 
-def _frustration_delta(correct: bool, signals: Signals, wrong_streak: int) -> float:
+def _strain_delta(correct: bool, signals: Signals, wrong_streak: int) -> float:
     """How much this single turn adds to (or takes off) the running strain."""
     if correct:
         # Getting one right is the strongest evidence that the student is fine,
@@ -188,9 +219,9 @@ def _frustration_delta(correct: bool, signals: Signals, wrong_streak: int) -> fl
         delta += 0.06
     if signals.slow:
         delta += 0.12
-    if signals.manner_distress:
+    if signals.manner_effortful:
         delta += 0.35
-    if signals.manner_ease:
+    if signals.manner_fluent:
         delta -= 0.15
     return delta
 
@@ -215,7 +246,7 @@ def update(
     *,
     correct: bool,
     signals: Signals,
-    frustration: float,
+    strain: float,
     correct_streak: int,
     wrong_streak: int,
     difficulty: int,
@@ -228,11 +259,11 @@ def update(
     student who is struggling never gets pushed because of an old streak.
     """
     picker = rng or random
-    level = max(0.0, min(1.0, frustration * _DECAY + _frustration_delta(correct, signals, wrong_streak)))
+    level = max(0.0, min(1.0, strain * _DECAY + _strain_delta(correct, signals, wrong_streak)))
 
     # 1. Struggling. Ease the material and add help, and say so - an unexplained
     #    drop in difficulty reads as being patronised.
-    if level >= FRUSTRATED:
+    if level >= STRAINED:
         eased = max(MIN_DIFFICULTY, difficulty - 1)
         helped = min(MAX_SCAFFOLD, scaffold + 1)
         changed = eased != difficulty or helped != scaffold
@@ -240,7 +271,7 @@ def update(
             direction="ease",
             difficulty=eased,
             scaffold=helped,
-            frustration=level,
+            strain=level,
             line=picker.choice(_EASE_LINES) if changed else picker.choice(_STEADY_LINES),
         )
 
@@ -259,14 +290,14 @@ def update(
         and level <= SETTLED
         and scaffold == MIN_SCAFFOLD
         and not signals.hesitant
-        and (signals.quick or signals.manner_ease or signals.thinking_ms is None)
+        and (signals.quick or signals.manner_fluent or signals.thinking_ms is None)
         and difficulty < MAX_DIFFICULTY
     ):
         return Adjustment(
             direction="stretch",
             difficulty=difficulty + 1,
             scaffold=MIN_SCAFFOLD,
-            frustration=level,
+            strain=level,
             line=picker.choice(_STRETCH_LINES),
         )
 

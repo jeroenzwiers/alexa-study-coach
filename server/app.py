@@ -163,10 +163,12 @@ def start_practice(
         "Grade the student's spoken answer to the current question and return "
         "feedback plus the next question. Pass the transcript exactly as heard, "
         "including any hesitation - the filler words are signal here. "
-        "If you noticed how the student sounded, pass a short `manner` note "
-        "(for example 'frustrated', 'hesitant, long pause', 'instant and "
-        "confident', 'sounds bored'). It is optional; the session adapts without "
-        "it, but it adapts better with it."
+        "Optionally pass a short `manner` note describing what the student DID, "
+        "as plain observable behaviour: 'long pause before answering', 'asked "
+        "to stop', 'answered instantly', 'started over twice', 'went quiet'. "
+        "Describe behaviour only - do not report or guess at the student's "
+        "emotions or mood, which this tool neither wants nor uses. The session "
+        "adapts without `manner`; it adapts better with it."
     ),
 )
 def submit_answer(session_id: str, response: str, manner: str | None = None) -> PracticeTurn:
@@ -254,13 +256,13 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
     adjustment = adaptive.update(
         correct=verdict.correct,
         signals=signals,
-        frustration=session.frustration,
+        strain=session.strain,
         correct_streak=session.correct_streak,
         wrong_streak=session.wrong_streak,
         difficulty=session.difficulty,
         scaffold=session.scaffold,
     )
-    session.frustration = adjustment.frustration
+    session.strain = adjustment.strain
     session.difficulty = adjustment.difficulty
     session.scaffold = adjustment.scaffold
     session.last_direction_of_travel = adjustment.direction
@@ -270,7 +272,7 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
     if settled:
         # Settling a confusion is the strongest possible evidence the student is
         # back on their feet; do not let an old strain reading outlive it.
-        session.frustration = max(0.0, session.frustration - 0.25)
+        session.strain = max(0.0, session.strain - 0.25)
 
     next_id = store.advance(session)
     dominant = session.dominant_confusion()
@@ -585,7 +587,7 @@ def tutor_report(session_id: str) -> str:
                 f"{asked.misconception} Worth going over that distinction directly."
             )
 
-    if session.last_direction_of_travel == "ease" or session.frustration >= adaptive.FRUSTRATED:
+    if session.last_direction_of_travel == "ease" or session.strain >= adaptive.STRAINED:
         parts.append(
             "The session was eased off towards the end - the answers were "
             "getting slower and less certain, so it stepped down a level rather "
