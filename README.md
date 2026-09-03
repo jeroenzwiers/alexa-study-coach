@@ -106,7 +106,7 @@ at all.
 ```bash
 python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt      # POSIX: .venv/bin/pip
-.venv/Scripts/python server/app.py                 # serves /mcp on :8080
+.venv/Scripts/python server/app.py                 # serves /mcp on :8421
 ```
 
 Then, in another shell:

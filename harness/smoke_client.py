@@ -11,7 +11,7 @@ import anyio
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
-URL = "http://127.0.0.1:8080/mcp"
+URL = "http://127.0.0.1:8421/mcp"
 BUDGET_MS = 500
 
 

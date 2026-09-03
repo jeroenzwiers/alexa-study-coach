@@ -29,7 +29,7 @@ import store
 import ui
 from grading import grade
 
-PUBLIC_URL = os.environ.get("PUBLIC_URL", "http://localhost:8080")
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "http://localhost:8421")
 
 
 class PracticeTurn(BaseModel):
@@ -371,4 +371,4 @@ app = server.streamable_http_app(streamable_http_path="/mcp", json_response=True
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("PORT", "8080")), log_level="warning")
+    uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("PORT", "8421")), log_level="warning")
