@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Study Coach | Alexa+ proof</title>
+    <style>
+      :root {
+        --ink: #17202b;
+        --muted: #687483;
+        --line: #dbe2e8;
+        --paper: #fff;
+        --ground: #edf2f3;
+        --teal: #087f80;
+        --teal-soft: #dff3ef;
+        --coral: #c64d35;
+        --coral-soft: #fbe8e2;
+        --gold: #896d13;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font:
+          16px/1.5 Georgia,
+          serif;
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 42px 22px 70px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: end;
+        padding-bottom: 30px;
+        border-bottom: 1px solid var(--line);
+      }
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--teal);
+        font:
+          600 12px/1.2 ui-monospace,
+          monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        max-width: 610px;
+        font-size: clamp(30px, 5vw, 54px);
+        line-height: 1.02;
+        font-weight: 400;
+      }
+      .subhead {
+        margin: 14px 0 0;
+        max-width: 570px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+      button {
+        border: 0;
+        border-radius: 7px;
+        background: var(--teal);
+        color: white;
+        padding: 13px 18px;
+        font:
+          600 15px ui-monospace,
+          monospace;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      #status {
+        min-height: 25px;
+        margin: 23px 0 12px;
+        color: var(--muted);
+        font:
+          13px ui-monospace,
+          monospace;
+      }
+      .timeline {
+        display: grid;
+        gap: 10px;
+      }
+      .event {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--line);
+        padding: 17px 18px;
+        box-shadow: 0 2px 4px #17202b0b;
+      }
+      .event.protocol {
+        border-left-color: var(--teal);
+        background: var(--teal-soft);
+      }
+      .event.answer {
+        border-left-color: var(--coral);
+      }
+      .event.persistence,
+      .event.restart {
+        border-left-color: var(--gold);
+      }
+      .label {
+        color: var(--muted);
+        font:
+          600 11px ui-monospace,
+          monospace;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+      .speech {
+        margin: 7px 0 0;
+        font-size: 18px;
+      }
+      .speech q {
+        quotes: "“" "”";
+      }
+      .detail {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 12px;
+      }
+      .tag {
+        padding: 4px 8px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        color: var(--muted);
+        font:
+          12px ui-monospace,
+          monospace;
+      }
+      .tag.good {
+        color: var(--teal);
+        border-color: #8dcfc1;
+        background: #f3fbf8;
+      }
+      .tag.bad {
+        color: var(--coral);
+        border-color: #e9a896;
+        background: #fff7f4;
+      }
+      .tag.strong {
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+      footer {
+        margin-top: 25px;
+        color: var(--muted);
+        font:
+          12px ui-monospace,
+          monospace;
+      }
+      @media (max-width: 620px) {
+        header {
+          display: block;
+        }
+        button {
+          margin-top: 20px;
+        }
+        main {
+          padding-top: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Alexa+ style proof · real MCP underneath</p>
+          <h1>Wrong is only the beginning.</h1>
+          <p class="subhead">
+            A normal study app knows you missed it. Study Coach knows what you
+            confused it with.
+          </p>
+        </div>
+        <button id="run" type="button">Run live session</button>
+      </header>
+      <div id="status">Ready to call the Study Coach MCP server.</div>
+      <section id="timeline" class="timeline">
+        <p class="empty">The live conversation will appear here.</p>
+      </section>
+      <footer>
+        Presentation shell only. Every decision below comes from the real
+        Streamable HTTP MCP server.
+      </footer>
+    </main>
+    <script>
+      const run = document.querySelector("#run");
+      const status = document.querySelector("#status");
+      const timeline = document.querySelector("#timeline");
+      const escapeHtml = (value) =>
+        String(value ?? "").replace(
+          /[&<>\"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+      const speech = (text) => `<p class="speech">${escapeHtml(text)}</p>`;
+      function tags(turn) {
+        const out = [];
+        if (turn.heard_as)
+          out.push(
+            `<span class="tag bad">attributed to ${escapeHtml(turn.heard_as)}</span>`,
+          );
+        if (turn.contrast)
+          out.push(
+            `<span class="tag strong">contrast: ${turn.contrast.map(escapeHtml).join(" vs ")}</span>`,
+          );
+        if (turn.resolved_confusion)
+          out.push(`<span class="tag good">CONFUSION_RESOLVED</span>`);
+        if (turn.verdict === "correct")
+          out.push(`<span class="tag good">correct</span>`);
+        if (turn.verdict === "incorrect")
+          out.push(`<span class="tag bad">not merely wrong</span>`);
+        return out.length ? `<div class="detail">${out.join("")}</div>` : "";
+      }
+      function add(html) {
+        timeline.insertAdjacentHTML("beforeend", html);
+      }
+      function render(data) {
+        timeline.innerHTML = "";
+        for (const event of data.events) {
+          if (event.kind === "protocol") {
+            add(
+              `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span></div></article>`,
+            );
+          } else if (event.kind === "start") {
+            add(
+              `<article class="event"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+            );
+          } else if (event.kind === "answer") {
+            if (event.state === "ANSWER_RECEIVED") continue;
+            add(
+              `<article class="event answer"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+            );
+          } else if (event.kind === "persistence") {
+            add(
+              `<article class="event persistence"><div class="label">${escapeHtml(event.state)} · student_progress</div>${speech(event.text)}<div class="detail"><span class="tag good">history read from server</span></div></article>`,
+            );
+          } else if (event.kind === "restart") {
+            add(
+              `<article class="event restart"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}<div class="detail"><span class="tag good">context restored</span></div></article>`,
+            );
+          }
+        }
+      }
+      run.addEventListener("click", async () => {
+        run.disabled = true;
+        status.textContent = "Calling the real MCP endpoint...";
+        timeline.innerHTML = "";
+        try {
+          const response = await fetch("/api/demo", { method: "POST" });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "MCP call failed");
+          render(data);
+          status.textContent = `Complete · ${data.mcp_url}`;
+        } catch (error) {
+          status.textContent = `Could not reach MCP server: ${error.message}`;
+        } finally {
+          run.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -155,6 +155,7 @@ class Session:
     contested: set = field(default_factory=set)            # pairs being drilled now
     resolved: set = field(default_factory=set)             # pairs settled this session
     pair_streak: Counter = field(default_factory=Counter)  # consecutive corrects per pair
+    successful_sides: dict = field(default_factory=dict)   # pair -> card ids answered correctly
     contrast_rounds: Counter = field(default_factory=Counter)
     pending_contrast: tuple | None = None
 
@@ -194,6 +195,7 @@ class Session:
         self.confusions[key] += 1
         self.last_direction[key] = (asked_card, said_card)
         self.pair_streak[key] = 0          # a miss breaks any run towards resolved
+        self.successful_sides[key] = set() # both sides must be demonstrated in sequence
         self.resolved.discard(key)         # and un-settles it if it had been settled
 
         ripe = self.confusions[key] >= CONFUSION_THRESHOLD
@@ -214,7 +216,9 @@ class Session:
             if card_id not in key:
                 continue
             self.pair_streak[key] += 1
-            if self.pair_streak[key] >= RESOLVE_STREAK:
+            sides = self.successful_sides.setdefault(key, set())
+            sides.add(card_id)
+            if len(sides) == len(key) and self.pair_streak[key] >= RESOLVE_STREAK:
                 self.contested.discard(key)
                 self.resolved.add(key)
                 settled.append(key)
@@ -362,6 +366,7 @@ def queue_contrast(session: Session, pair: tuple[str, str]) -> None:
     session.contested.add(key)
     session.contrast_rounds[key] += 1
     session.pair_streak[key] = 0
+    session.successful_sides[key] = set()
 
     session.deferred = [item for item in session.deferred if item[1] not in pair]
     for cid in (said_card, asked_card):        # inserted in reverse: asked goes first

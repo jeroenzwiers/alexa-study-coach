@@ -633,7 +633,7 @@ def class_report(study_set_id: str = "", minimum: int | None = None) -> str:
     if study_set is None:
         return "There are no study sets loaded yet."
 
-    floor = profiles.MIN_STUDENTS if minimum is None else max(1, minimum)
+    floor = profiles.MIN_STUDENTS if minimum is None else max(profiles.MIN_STUDENTS, minimum)
     studied, confusions = profiles.topic_map(study_set.id)
 
     if not studied:

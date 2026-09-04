@@ -1,7 +1,7 @@
 # Study Coach
 
 An Alexa+ add-on that revises with a student out loud — and when they get
-something wrong, tells them *which* idea they reached for instead, drills that
+something wrong, tells them _which_ idea they reached for instead, drills that
 one distinction until it holds, and remembers it next week if it doesn't.
 
 Built for the Alexa+ track of the **Build, Ship, Shape: Amazon Developer
@@ -45,54 +45,54 @@ thing they said.**
 
 Then it reports it:
 
-> *4 out of 7 on The Cell. The errors are not spread out. 3 of them are the same
+> _4 out of 7 on The Cell. The errors are not spread out. 3 of them are the same
 > confusion: when asked about the chloroplasts, the answer given was the
-> mitochondria.*
+> mitochondria._
 
 …or, when the student got there:
 
-> *6 out of 8 on The Cell. One confusion was settled during the session: the
+> _6 out of 8 on The Cell. One confusion was settled during the session: the
 > chloroplasts against the mitochondria, answered correctly from both sides at
-> the end.*
+> the end._
 
 A flashcard app cannot say either sentence. It records one bit per answer.
 
 ## The problem underneath: you cannot grade speech with a similarity threshold
 
-The obvious way to mark a spoken answer is to accept it when it is *similar
-enough* to the expected one. We measured that this cannot work.
+The obvious way to mark a spoken answer is to accept it when it is _similar
+enough_ to the expected one. We measured that this cannot work.
 
 Speech recognition mangles words phonetically, so a correct answer can arrive
 badly distorted while a genuinely different answer can be spelled almost
 identically:
 
-| spoken | expected | similarity | must be |
-|---|---|---|---|
-| `"new clee us"` | `nucleus` | **0.750** | correct |
-| `"nucleus"` | `nucleolus` | **0.875** | wrong |
+| spoken          | expected    | similarity | must be |
+| --------------- | ----------- | ---------- | ------- |
+| `"new clee us"` | `nucleus`   | **0.750**  | correct |
+| `"nucleus"`     | `nucleolus` | **0.875**  | wrong   |
 
-The wrong pair scores *higher* than the right one. No threshold separates these
+The wrong pair scores _higher_ than the right one. No threshold separates these
 classes — not on letters, and not on phonetic keys either. The classes genuinely
 overlap.
 
 So the grader does not ask "is this close enough?". It asks **"of every answer
 that appears anywhere in this study set, which one did the student say?"** — a
 nearest-neighbour attribution over a known, closed candidate set, deciding
-between the best *right* answer and the best *wrong* one. `nucleolus` stops
+between the best _right_ answer and the best _wrong_ one. `nucleolus` stops
 being a near-miss and becomes its own candidate.
 
 Two things fall out of that:
 
 1. It works. 20/20 on the hard cases in `harness/test_grading.py`, including
    distortions like `"the might o chondria"` and `"sell wall"`.
-2. Being wrong is no longer one bit. We know *which* concept was reached for —
+2. Being wrong is no longer one bit. We know _which_ concept was reached for —
    which is what everything above and below is built on.
 
 ## Where the questions come from, and why that is the same problem
 
 The closed candidate set is what makes the diagnosis possible, and it is also
-the thing a badly built study set destroys. If a student answers *chloroplasts*
-and no card in the set has *chloroplasts* as an answer, there is nothing to
+the thing a badly built study set destroys. If a student answers _chloroplasts_
+and no card in the set has _chloroplasts_ as an answer, there is nothing to
 attribute it to: the grade comes back `ambiguous`, the coach says "I didn't
 catch that", and no confusion is ever found. The questions look fine. The
 feature is dead.
@@ -107,12 +107,12 @@ And then the model's work is checked by the code that has to live with it.
 `tools/verify_study_set.py` runs every set through the **real `grading.grade`**
 that serves live traffic:
 
-| check | what it catches |
-|---|---|
-| own phrasings | a card whose own answer does not attribute to it — an unanswerable question |
-| **cross-attribution** | saying card A's answer to card B's question must still be attributed to A. This is the diagnosis in one assertion: it is how the coach knows the student said *chloroplasts* rather than merely *not mitochondria* |
-| collisions | two cards accepting the same words, which makes attribution a coin flip |
-| structure | difficulty out of range, a missing misconception line, a distractor label pointing nowhere |
+| check                 | what it catches                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| own phrasings         | a card whose own answer does not attribute to it — an unanswerable question                                                                                                                                        |
+| **cross-attribution** | saying card A's answer to card B's question must still be attributed to A. This is the diagnosis in one assertion: it is how the coach knows the student said _chloroplasts_ rather than merely _not mitochondria_ |
+| collisions            | two cards accepting the same words, which makes attribution a coin flip                                                                                                                                            |
+| structure             | difficulty out of range, a missing misconception line, a distractor label pointing nowhere                                                                                                                         |
 
 A generated set that fails is reported and not written. The model proposes; the
 grader decides.
@@ -132,8 +132,8 @@ ALEXA   : Welcome back. Yesterday the mitochondria and the chloroplasts kept
           organelle captures light energy in a plant cell?
 ```
 
-That line is only available to something that kept *which two things* rather
-than *how many out of ten*. The unsettled pair is not a fresh question — it is
+That line is only available to something that kept _which two things_ rather
+than _how many out of ten_. The unsettled pair is not a fresh question — it is
 unfinished business, so it goes first, carrying its history, and two right
 answers now close it for good. A confusion that comes back after being settled
 goes back on the open list rather than being quietly forgotten.
@@ -146,9 +146,9 @@ for good, and what is still open.
 One student mixing osmosis up with diffusion is a fact about that student. Nine
 students doing it is a fact about the material:
 
-> *Nine students have practised The Cell. One confusion stands out: osmosis and
+> _Nine students have practised The Cell. One confusion stands out: osmosis and
 > diffusion, seven students. Six of them go the same way: asked about osmosis,
-> they answer diffusion. Three have since settled it.*
+> they answer diffusion. Three have since settled it._
 
 That last-but-one sentence is the useful one. "They confuse these two" tells a
 teacher to revise both. "Six of them answer diffusion when asked about osmosis"
@@ -157,7 +157,7 @@ produces it, because marking records that an answer was wrong, not which other
 idea was reached for.
 
 It is aggregate by construction. `class_report` counts students per confusion
-and never carries an identity out of `history.py`: it can say *seven students*
+and never carries an identity out of `history.py`: it can say _seven students_
 and cannot say which seven. For a product whose users are children, that is a
 design constraint rather than a feature. A confusion held by one student alone
 is counted but never reported as a pattern.
@@ -165,17 +165,17 @@ is counted but never reported as a pattern.
 ## It reads how the answer arrived, not just whether it was right
 
 A tutor pushes when it is all going in too easily and backs off when the student
-is losing heart. That needs a signal about *how* an answer arrived.
+is losing heart. That needs a signal about _how_ an answer arrived.
 
 It would be convenient to read the tone of voice. **We cannot** — the Alexa+ MCP
 toolkit hands a server tool arguments, and nothing in its documented contract
 carries audio, prosody or affect. The server never hears the student. So the
 signal is split, each half where it belongs:
 
-| | |
-|---|---|
-| **observed here** | hesitation and give-up markers in the transcript, how long the answer took once Alexa's own speaking time is subtracted, and the run of right and wrong |
-| **asked of Alexa+** | an optional `manner` argument on `submit_answer` — Alexa+ *did* hear the student, so the tool description invites it to report what the student **did**: "long pause before answering", "asked to stop", "answered instantly" |
+|                     |                                                                                                                                                                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **observed here**   | hesitation and give-up markers in the transcript, how long the answer took once Alexa's own speaking time is subtracted, and the run of right and wrong                                                                       |
+| **asked of Alexa+** | an optional `manner` argument on `submit_answer` — Alexa+ _did_ hear the student, so the tool description invites it to report what the student **did**: "long pause before answering", "asked to stop", "answered instantly" |
 
 `manner` carries **observable behaviour, never an emotion label** — and the
 server declines an emotion word even when one is handed over willingly. That is
@@ -189,7 +189,7 @@ generalise.
 It stays inside the law. Article 5(1)(f) prohibits AI systems that infer a
 person's emotions in the workplace or in education, in force since 2 February
 2025, with only medical and safety exceptions. A revision coach sits squarely in
-that domain. Reading what a student *did* is not inferring what they *felt*, and
+that domain. Reading what a student _did_ is not inferring what they _felt_, and
 keeping the two apart is what lets this feature exist at all.
 
 `manner` is a hint that sharpens the read, never a requirement. Everything works
@@ -199,7 +199,7 @@ with it and once without, requiring the session to cope either way.
 
 There is a nice symmetry in the transcript half: the filler the grader throws
 away (`"um"`, `"I guess"`) is exactly the evidence this half keeps. The same
-token means *ignore me* to one part of the server and *this was effortful* to
+token means _ignore me_ to one part of the server and _this was effortful_ to
 the other.
 
 What it does with the read:
@@ -207,7 +207,7 @@ What it does with the read:
 - **struggling** → step the questions down a level and add support: first a
   hint, then two options to choose between. And say so, because an unexplained
   drop in difficulty reads as being patronised.
-- **cruising** → step up. But only when the student is both accurate *and*
+- **cruising** → step up. But only when the student is both accurate _and_
   comfortable: a streak scraped through slowly is not an invitation.
 - **recovering** → take the support away one rung at a time, and never in the
   same breath as making the question harder.
@@ -225,12 +225,12 @@ It does not need to. Alexa+ already supplies the conversation and the reasoning;
 what it cannot do is decide reliably whether a mangled utterance was the right
 answer. That judgement is deterministic, explainable, and free:
 
-| | measured |
-|---|---|
-| grading, median | **3.6 ms** |
-| grading, p99 | **14.0 ms** — 3% of the platform budget |
-| MCP round trip, median / worst | **8.9 ms** / **114.9 ms** |
-| model calls while answering | **0** |
+|                                | measured                                |
+| ------------------------------ | --------------------------------------- |
+| grading, median                | **3.6 ms**                              |
+| grading, p99                   | **14.0 ms** — 3% of the platform budget |
+| MCP round trip, median / worst | **8.9 ms** / **114.9 ms**               |
+| model calls while answering    | **0**                                   |
 
 Grading is measured over 10,400 calls against the full thirteen-card set; the
 round trip is what `harness/smoke_client.py` sees over Streamable HTTP, worst
@@ -253,16 +253,16 @@ at all.
 
 ## Tools
 
-| tool | purpose |
-|---|---|
-| `list_study_sets` | what this student can practise |
-| `start_practice` | begin a session, return the first question |
-| `submit_answer` | grade a spoken answer, adapt, return the next question |
-| `explain` | one or two spoken sentences on a concept |
-| `session_summary` | how the session went |
-| `tutor_report` | the pattern behind the errors, for a parent or tutor |
-| `student_progress` | what is settled and what is still open, across sessions |
-| `class_report` | which confusions recur across every student who studied a set |
+| tool               | purpose                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `list_study_sets`  | what this student can practise                                |
+| `start_practice`   | begin a session, return the first question                    |
+| `submit_answer`    | grade a spoken answer, adapt, return the next question        |
+| `explain`          | one or two spoken sentences on a concept                      |
+| `session_summary`  | how the session went                                          |
+| `tutor_report`     | the pattern behind the errors, for a parent or tutor          |
+| `student_progress` | what is settled and what is still open, across sessions       |
+| `class_report`     | which confusions recur across every student who studied a set |
 
 `start_practice` and `submit_answer` are bound to `ui://study-coach/practice.html`.
 
@@ -285,6 +285,18 @@ Then, in another shell:
 .venv/Scripts/python harness/test_topic_map.py     # a synthetic class of nine
 .venv/Scripts/python harness/test_content.py       # is the study set itself sound?
 ```
+
+For a judge-facing Alexa+-style proof backed by the real MCP server, start the
+server and the presentation shell in two shells:
+
+```bash
+.venv/bin/python server/app.py
+.venv/bin/python preview/demo_server.py
+```
+
+Open `http://127.0.0.1:8430`. The shell is presentation only: every question,
+grade, confusion, resolution, and persisted-progress result comes from live
+Streamable HTTP MCP calls to the server on port 8421.
 
 ## Layout
 

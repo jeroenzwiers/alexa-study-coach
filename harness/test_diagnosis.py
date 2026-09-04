@@ -53,8 +53,29 @@ def reply_to(question: str, taught: bool) -> str:
     return "i dont know"
 
 
+def resolution_invariant_checks() -> dict:
+    """A pair resolves only after correct answers from both target sides."""
+    cases = {
+        "A then A stays open": ("c1", "c1", False),
+        "B then B stays open": ("c6", "c6", False),
+        "A then B resolves": ("c1", "c6", True),
+        "B then A resolves": ("c6", "c1", True),
+    }
+    checks = {}
+    for label, (first, second, expected) in cases.items():
+        session = store.Session(id=label, study_set_id="biology_cells")
+        key = store.pair_key("c1", "c6")
+        session.confusions[key] = store.CONFUSION_THRESHOLD
+        session.contested.add(key)
+        session.record_success(first)
+        resolved = bool(session.record_success(second))
+        checks[label] = resolved is expected
+    return checks
+
+
 def main() -> int:
     random.seed(7)
+    checks = resolution_invariant_checks()
     turn = app.start_practice("biology_cells", length=8, student="__test_diagnosis__")
     session_id = turn.session_id
     print("ALEXA   :", turn.speech)
@@ -83,7 +104,7 @@ def main() -> int:
 
     session = store.SESSIONS[session_id]
     print()
-    checks = {
+    checks.update({
         "een verwisseling herkend als patroon": bool(session.confusions),
         "andere kant van de verwarring actief bevraagd": session.bonus > 0 or saw_contrast,
         "contrastvraag gesteld": saw_contrast,
@@ -91,7 +112,7 @@ def main() -> int:
         "verwarring staat als opgelost in de sessie": bool(session.resolved),
         "rapport benoemt de oplossing": "settled during the session" in report,
         "geen open verwarring meer over": session.dominant_confusion() is None,
-    }
+    })
     for label, ok in checks.items():
         print(f"  {'OK  ' if ok else 'FOUT'} {label}")
     return 0 if all(checks.values()) else 1

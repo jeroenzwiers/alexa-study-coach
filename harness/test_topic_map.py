@@ -116,6 +116,8 @@ def main() -> int:
         "rapport meldt wie het al opgeloste heeft": "settled" in lower,
         "rapport verzwijgt de eenling": "nucleolus" not in lower,
         "rapport bevat geen enkele leerlingnaam": "pupil" not in lower,
+        "minimum nul blijft privacyvloer twee": "nucleolus" not in app.class_report(SET, minimum=0).lower(),
+        "minimum een blijft privacyvloer twee": "nucleolus" not in app.class_report(SET, minimum=1).lower(),
     }
     for label, ok in checks.items():
         print(f"  {'OK  ' if ok else 'FOUT'} {label}")

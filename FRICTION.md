@@ -9,7 +9,7 @@ something, not reconstructed afterwards, which is why some entries record a
 five-minute annoyance and one records an hour.
 
 Items 1, 2 and 5–8 were logged on 2 September 2026 while building the server,
-as were the three observations in *What worked well*. Items 3 and 4 were
+as were the three observations in _What worked well_. Items 3 and 4 were
 established on 3 September 2026 by re-reading the toolkit documentation while
 designing a feature that turned out to rest on behaviour the documentation does
 not describe; both quotations there were checked against the live pages that
@@ -199,6 +199,34 @@ This deserves to be stated more prominently in the extension's own
 documentation. It is the property that makes the extension safe to adopt for a
 voice-first product, and it is currently something you infer rather than
 something you are told.
+
+---
+
+## Alexa+ access check — no public onboarding path available
+
+### 12. The advertised CLI is not available in this developer environment
+
+**TASK:** Determine whether this environment could onboard the Alexa+ MCP
+Toolkit or Alexa AI CLI for a real platform proof.
+
+**STEPS:** Checked for local Alexa CLI binaries and global Alexa packages, then
+queried the public npm registry for `@alexa-ai/cli`.
+
+**EXPECTED:** A usable CLI or an onboarding path that could be run with the
+available developer account.
+
+**ACTUAL:** No Alexa CLI binary, package, or account configuration was present.
+The public npm registry returned `E404 Not Found` for `@alexa-ai/cli`.
+
+**SEVERITY:** Important.
+
+**WORKAROUND:** Used the hackathon's permitted simulated Alexa+ path. The
+simulation is a presentation-only MCP client and calls the real local
+Streamable HTTP server.
+
+**ACTIONABLE_AMAZON_FEEDBACK:** State in the first Alexa+ onboarding page
+whether access is restricted to select partners, how a developer verifies
+eligibility, and where the permitted simulation path is documented.
 
 ---
 
