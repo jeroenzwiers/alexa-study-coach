@@ -75,6 +75,31 @@ BROKEN_LABEL = [
 ]
 
 
+# A set that names no near-misses at all. It looks perfectly sound by every
+# other check, and it is exactly the shape that marks "the mode" correct when a
+# student is asked about the median.
+NO_NEAR_MISSES = [
+    {"id": "n1", "question": "What is the middle value called?",
+     "accepted": ["the median"], "canonical": "The median.", "difficulty": 1,
+     "misconception": "The median is the middle; the mean is the total shared out."},
+    {"id": "n2", "question": "What is the total shared out called?",
+     "accepted": ["the mean"], "canonical": "The mean.", "difficulty": 1,
+     "misconception": "The mean is the total shared out; the median is the middle."},
+]
+
+# ...and a set that declares one but has it in `accepted` somewhere too, so the
+# concept it means to refuse is still handed out as a correct answer.
+BAD_NEAR_MISS = [
+    {"id": "b1", "question": "What is the middle value called?",
+     "accepted": ["the median"], "canonical": "The median.", "difficulty": 1,
+     "near_misses": ["the mode"],
+     "misconception": "The median is the middle; the mode is the commonest."},
+    {"id": "b2", "question": "What is the commonest value called?",
+     "accepted": ["the mode"], "canonical": "The mode.", "difficulty": 1,
+     "misconception": "The mode is the commonest; the median is the middle."},
+]
+
+
 def main() -> int:
     checks = {}
 
@@ -106,6 +131,8 @@ def main() -> int:
         ("geen misconception-regel", NO_MISCONCEPTION, "no misconception"),
         ("moeilijkheid buiten bereik", BAD_DIFFICULTY, "is not 1, 2 or 3"),
         ("verwijst naar een kaart die niet bestaat", BROKEN_LABEL, "is not a card"),
+        ("geen enkele near-miss gedeclareerd", NO_NEAR_MISSES, "declares `near_misses`"),
+        ("near-miss wordt juist goedgerekend", BAD_NEAR_MISS, "must never be accepted"),
     ):
         problems, _ = verify(cards)
         found = any(needle in p for p in problems)

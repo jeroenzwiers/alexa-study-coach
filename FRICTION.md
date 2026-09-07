@@ -44,6 +44,23 @@ the first command — what the role is, how to check whether you have it, and wh
 to do if you don't. An `E404` from npm is the least informative possible signal
 for an authorisation problem.
 
+**And say whether the door is open at all.** Re-checked on 7 September 2026 with
+the developer account available here: no `@alexa-ai/cli` on public npm (`E404`),
+no local binary, no account configuration that would grant the CodeArtifact
+role. What we could not determine from the documentation is whether that is a
+missing step on our side or a closed gate — whether toolkit access is restricted
+to selected partners, how a developer checks their own eligibility, and where
+the permitted simulated path is documented. We used the hackathon's simulated
+Alexa+ path: `preview/demo_server.py` is a presentation shell only and drives
+the real local Streamable HTTP server.
+
+Two things this entry does *not* claim, because an earlier draft did and both
+are falsifiable in five seconds. It is not a finding that no Alexa CLI exists —
+`ask-cli` is public on npm and installs fine; it is the wrong CLI for this
+toolkit, which is the point. And checking three places is not a proof that no
+public onboarding path exists, only that we could not find one from the
+documentation we were given.
+
 ### 2. The CodeArtifact token expires in 12 hours, and the failure looks like a broken package
 
 Once the token lapses, subsequent installs fail in a way that reads as a
@@ -199,34 +216,6 @@ This deserves to be stated more prominently in the extension's own
 documentation. It is the property that makes the extension safe to adopt for a
 voice-first product, and it is currently something you infer rather than
 something you are told.
-
----
-
-## Alexa+ access check — no public onboarding path available
-
-### 12. The advertised CLI is not available in this developer environment
-
-**TASK:** Determine whether this environment could onboard the Alexa+ MCP
-Toolkit or Alexa AI CLI for a real platform proof.
-
-**STEPS:** Checked for local Alexa CLI binaries and global Alexa packages, then
-queried the public npm registry for `@alexa-ai/cli`.
-
-**EXPECTED:** A usable CLI or an onboarding path that could be run with the
-available developer account.
-
-**ACTUAL:** No Alexa CLI binary, package, or account configuration was present.
-The public npm registry returned `E404 Not Found` for `@alexa-ai/cli`.
-
-**SEVERITY:** Important.
-
-**WORKAROUND:** Used the hackathon's permitted simulated Alexa+ path. The
-simulation is a presentation-only MCP client and calls the real local
-Streamable HTTP server.
-
-**ACTIONABLE_AMAZON_FEEDBACK:** State in the first Alexa+ onboarding page
-whether access is restricted to select partners, how a developer verifies
-eligibility, and where the permitted simulation path is documented.
 
 ---
 

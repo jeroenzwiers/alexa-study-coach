@@ -46,7 +46,6 @@ import store
 import ui
 from grading import grade
 
-PUBLIC_URL = os.environ.get("PUBLIC_URL", "http://localhost:8421")
 
 
 class PracticeTurn(BaseModel):
@@ -216,7 +215,15 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
         session.correct_streak = 0
         session.wrong_streak += 1
         session.missed.append(card.id)
-        said_card = verdict.matched.card_id if verdict.matched else None
+        # An `ambiguous` or `empty` verdict still carries a `matched` candidate -
+        # the nearest one, which the grader has just declared it cannot choose
+        # between. Reading it anyway meant a half-heard utterance was written to
+        # the profile as a confusion, drilled as a contrast, probed from the
+        # other side, and summed into the class report, while the only surface
+        # that told the truth was the sentence the student heard. Refusing to
+        # guess has to mean refusing everywhere, not just out loud.
+        unusable = verdict.rung in ("ambiguous", "empty")
+        said_card = verdict.matched.card_id if (verdict.matched and not unusable) else None
 
         # A repeated wrong attribution is a misconception, not a slip. When one
         # emerges, the session stops drawing random cards and drills the contrast.
@@ -230,7 +237,26 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
 
         said = study_set.card(said_card) if said_card else None
         heard_as = said.canonical.rstrip(".") if said is not None else None
-        if verdict.rung in ("ambiguous", "empty"):
+
+        # A declared near-miss: a real concept from the subject that this set has
+        # no card for. It has no card_id, so there is no pair to record and
+        # nothing to drill - but it can still be NAMED, and naming it is the
+        # whole point. "That's the mode" corrects the student; "I didn't quite
+        # catch that" blames their diction for a word they said perfectly.
+        outside = (
+            verdict.matched is not None
+            and verdict.matched.card_id is None
+            and verdict.rung not in ("ambiguous", "empty", "negated")
+        )
+
+        if outside:
+            revealed = card.canonical.rstrip(".")
+            heard_as = None
+            feedback = (
+                f"Not quite - that's {verdict.matched.text}, which is a "
+                f"different thing. The answer is {card.canonical}"
+            )
+        elif verdict.rung in ("ambiguous", "empty"):
             # Never guess at a half-heard answer - ask, or give the answer plainly.
             feedback = f"I didn't quite catch that. The answer is {card.canonical}"
             revealed = card.canonical.rstrip(".")
@@ -291,8 +317,21 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
         returning=session.returning,
     )
 
-    if next_id is None:
+    # Filed while the session runs, not only when it ends. A session that was
+    # never finished used to write nothing at all, and the students most likely
+    # to put the speaker down halfway are the ones with the most confusions to
+    # record - so the memory, and the class report built on it, quietly
+    # described only the evenings that went well enough to complete.
+    #
+    # But not on every turn: this is the only filesystem touch in the answering
+    # path, and writing on all thirteen tripled the round trip. So it writes
+    # when there is something new worth keeping - a miss, a confusion settled,
+    # the first answer (which is what marks the student as having practised at
+    # all), or the end.
+    if not verdict.correct or settled or session.asked <= 1 or next_id is None:
         _remember(session)
+
+    if next_id is None:
         return PracticeTurn(
             finished=True,
             speech=f"{feedback} That was the last one. {_score_line(session)}",
@@ -372,6 +411,18 @@ def _distractor(study_set, card):
     others = [c for c in study_set.cards if c.id != card.id]
     if not others:
         return None
+
+    # The set's author already said which concept this one gets mistaken for.
+    # Use it: a choice between the two things a student actually confuses is
+    # the distinction worth practising, and it arrives at the moment the session
+    # has decided they need support. Picking any card of similar difficulty
+    # produced "the perimeter, or the coefficient" - nine cards out of twelve
+    # share a difficulty, so the "contrast" was a coin toss and the option pair
+    # a free mark.
+    declared = [c for c in others if c.id in study_set.confusable_with(card.id)]
+    if declared:
+        return random.choice(declared)
+
     nearest = min(abs(c.difficulty - card.difficulty) for c in others)
     return random.choice([c for c in others if abs(c.difficulty - card.difficulty) == nearest])
 
@@ -566,6 +617,15 @@ def tutor_report(session_id: str) -> str:
             break
 
     dominant = session.dominant_confusion()
+    # "N of them are the same confusion" counts tonight's errors, so it must not
+    # include the count a carried confusion arrived with. Without this a student
+    # who slipped once on a pair they have been drilling for weeks is reported
+    # to their parent as having made every one of those old errors again.
+    if dominant is not None:
+        pair, _ = dominant
+        fresh = session.fresh_confusion_count(store.pair_key(*pair))
+        dominant = (pair, fresh) if fresh else None
+
     if dominant is None:
         if session.missed and not session.resolved:
             parts.append(
@@ -629,6 +689,14 @@ def student_progress(student: str = "default", study_set_id: str = "") -> str:
     ),
 )
 def class_report(study_set_id: str = "", minimum: int | None = None) -> str:
+    # A named set that does not exist must say so. Falling through to whichever
+    # set happens to be first answered a teacher's question about one subject
+    # with confident numbers about another, and Alexa+ mishearing a topic is
+    # exactly how that gets reached. An omitted set still defaults.
+    if study_set_id and study_set_id not in store.STUDY_SETS:
+        known = ", ".join(s.title for s in store.STUDY_SETS.values()) or "none"
+        return f"I do not have that set. I have {known}."
+
     study_set = store.STUDY_SETS.get(study_set_id) or next(iter(store.STUDY_SETS.values()), None)
     if study_set is None:
         return "There are no study sets loaded yet."
@@ -723,24 +791,21 @@ def _topics_from(names: list[str]) -> str:
     return ", ".join(names[:-1]) + f", and {names[-1]}"
 
 
-# --- Endpoints the Alexa+ MCP Toolkit requires -----------------------------
-# The toolkit expects 401 on unauthenticated calls and OAuth metadata at a
-# well-known path. Local development runs open; AUTH_REQUIRED turns the gate on
-# so we can verify the real behaviour before deploying.
-
-@server.custom_route("/.well-known/oauth-authorization-server", methods=["GET"])
-async def oauth_metadata(request: Request) -> JSONResponse:
-    return JSONResponse(
-        {
-            "issuer": PUBLIC_URL,
-            "authorization_endpoint": f"{PUBLIC_URL}/oauth/authorize",
-            "token_endpoint": f"{PUBLIC_URL}/oauth/token",
-            "response_types_supported": ["code"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "code_challenge_methods_supported": ["S256"],
-            "scopes_supported": ["study.read", "study.practise"],
-        }
-    )
+# --- Authentication: there is none, and this server no longer says otherwise --
+#
+# There used to be an OAuth metadata document at
+# /.well-known/oauth-authorization-server here, advertising an authorization
+# endpoint and a token endpoint. Neither existed - both returned 404 - and the
+# comment beside it described an AUTH_REQUIRED flag that appears nowhere in the
+# codebase. Everywhere else this repo overstates something it does so to a
+# reader; that document made the false claim in machine-readable form, to the
+# toolkit itself.
+#
+# Building real auth is not a thing that fits before the deadline. Removing the
+# claim is. This server is unauthenticated: anyone who can reach the port can
+# call any tool, and `student_progress` will return a named student's open
+# confusions to them. That is stated in LIMITATIONS.md and it is why the
+# deployment story is one device in one home, not a school.
 
 
 @server.custom_route("/healthz", methods=["GET"])
@@ -753,4 +818,8 @@ app = server.streamable_http_app(streamable_http_path="/mcp", json_response=True
 if __name__ == "__main__":
     import uvicorn
 
+    # Harness runs and demo rehearsals persist like anyone else, but under a
+    # marked id and in their own directory. Clearing it here keeps those runs
+    # from piling up and keeps each one starting from a blank student.
+    profiles.clear_scratch()
     uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("PORT", "8421")), log_level="warning")

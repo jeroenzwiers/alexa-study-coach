@@ -26,6 +26,43 @@ from dataclasses import dataclass
 
 DATA_DIR = pathlib.Path(__file__).resolve().parents[1] / "data" / "students"
 
+# A student id carrying this marker is synthetic: a harness run, the
+# judge-facing demo, anything driven by a script rather than by a child.
+#
+# Such a student still gets a real profile, because the tests and the demo exist
+# to prove that the memory works across sessions - stubbing that out would prove
+# nothing. But it is kept in a scratch directory beside the real ones, and never
+# counted in an aggregate. Otherwise every rehearsal adds a fictional pupil to
+# the class report, and after a handful of runs the teacher's "nine students
+# have practised The Cell" is describing the rehearsals rather than the class.
+SYNTHETIC_MARKER = "__"
+
+
+def is_synthetic(student: str) -> bool:
+    return (student or "").startswith(SYNTHETIC_MARKER)
+
+
+def clear_scratch() -> int:
+    """Throw away the synthetic profiles. Returns how many went.
+
+    Called when the server starts, so that a run of the harness or the demo
+    begins from nothing rather than from whatever the last rehearsal left
+    behind. Nothing real can be reached from here: the directory only ever
+    receives profiles whose student id carries the marker.
+    """
+    scratch = DATA_DIR.parent / "scratch"
+    if not scratch.exists():
+        return 0
+    gone = 0
+    for path in scratch.glob("*.json"):
+        try:
+            path.unlink()
+            gone += 1
+        except OSError:
+            continue
+    return gone
+
+
 # How long a confusion stays interesting. A misconception from three months ago
 # is not evidence about the student today, and re-drilling it would be a worse
 # use of the session than moving on.
@@ -42,12 +79,27 @@ def _safe_id(student: str) -> str:
     return cleaned or "default"
 
 
+def _dir_for(student: str) -> pathlib.Path:
+    """Where this student's profile lives: the real set, or the scratch set.
+
+    Read off DATA_DIR each time rather than resolved once at import, so that a
+    harness which redirects DATA_DIR to a temporary directory takes the scratch
+    directory along with it.
+    """
+    return DATA_DIR.parent / "scratch" if is_synthetic(student) else DATA_DIR
+
+
+def profile_path(student: str) -> pathlib.Path:
+    """Where this student's profile is written. For callers that need the file."""
+    return _dir_for(student) / f"{_safe_id(student)}.json"
+
+
 def _blank(student: str) -> dict:
     return {"student": student, "sets": {}}
 
 
 def load(student: str) -> dict:
-    path = DATA_DIR / f"{_safe_id(student)}.json"
+    path = profile_path(student)
     if not path.exists():
         return _blank(student)
     try:
@@ -61,8 +113,10 @@ def load(student: str) -> dict:
 
 
 def save(profile: dict) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    path = DATA_DIR / f"{_safe_id(profile.get('student', 'default'))}.json"
+    student = profile.get("student", "default")
+    directory = _dir_for(student)
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f"{_safe_id(student)}.json"
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(profile, indent=2, sort_keys=True), encoding="utf-8")
     tmp.replace(path)   # atomic, so a crash mid-write cannot truncate a profile
@@ -109,12 +163,21 @@ def carried_difficulty(profile: dict, study_set_id: str) -> int:
 def remember(profile: dict, session, study_set) -> dict:
     """Fold a session's diagnosis into the long-term record.
 
-    Called when a session ends. Everything here is about the confusions, not the
-    score: the score is a fact about one evening, the confusions are a fact
-    about the student.
+    Everything here is about the confusions, not the score: the score is a fact
+    about one evening, the confusions are a fact about the student.
+
+    Safe to call REPEATEDLY for the same session, which is what lets a session
+    be filed as it goes rather than only when its last question is answered. A
+    student who puts the speaker down halfway used to lose the whole evening -
+    every confusion found, every pair settled - and the ones most likely to stop
+    early are the ones with the most to remember, so the loss was not evenly
+    spread. `session.written` records what is already on disk so a second call
+    folds in only what has happened since.
     """
     record = record_for(profile, session.study_set_id)
-    record["sessions"] = int(record.get("sessions", 0)) + 1
+    if not session.persisted:
+        record["sessions"] = int(record.get("sessions", 0)) + 1
+        session.persisted = True
     record["last_seen"] = _today()
     record["last_score"] = [session.correct, session.asked]
     record["difficulty"] = int(getattr(session, "difficulty", 1))
@@ -131,8 +194,12 @@ def remember(profile: dict, session, study_set) -> dict:
         asked, said = session.last_direction.get(key, key)
         previous = opened.get(flat, {}).get("count", 0)
         # A carried-in confusion starts the session pre-loaded with its own
-        # history; adding that back would count last week's misses twice.
-        fresh = max(0, count - session.seeded.get(key, 0))
+        # history; adding that back would count last week's misses twice. So
+        # would anything this session has already filed.
+        fresh = max(0, count - session.seeded.get(key, 0) - session.written.get(key, 0))
+        if not fresh and flat in opened:
+            continue
+        session.written[key] = count - session.seeded.get(key, 0)
         opened[flat] = {
             "count": previous + fresh,
             "asked": asked,
@@ -312,15 +379,23 @@ class TopicConfusion:
 
 
 def all_profiles() -> list[dict]:
-    """Every stored profile. On Lambda this is a scan; here it is a directory."""
+    """Every stored REAL profile. On Lambda a scan; here a directory.
+
+    Scratch profiles live elsewhere and so are already out of reach, but the id
+    is checked too: a synthetic student that predates the split, or one written
+    by hand, must not turn up in a class report either.
+    """
     if not DATA_DIR.exists():
         return []
     out = []
     for path in sorted(DATA_DIR.glob("*.json")):
         try:
-            out.append(json.loads(path.read_text(encoding="utf-8")))
+            profile = json.loads(path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             continue          # one unreadable profile must not lose the rest
+        if is_synthetic(profile.get("student", "")):
+            continue
+        out.append(profile)
     return out
 
 
@@ -337,11 +412,28 @@ def topic_map(study_set_id: str, profiles: list[dict] | None = None) -> tuple[in
         record = profile.get("sets", {}).get(study_set_id)
         if not record or not record.get("sessions"):
             continue
+
+        # A class report describes the class that is here now. A student who
+        # last practised beyond the staleness window has very likely moved on,
+        # and counting them told a teacher that seven of HER students share a
+        # confusion when it was last year's cohort - with no date in the report
+        # to make that visible. The session path already forgets on this clock;
+        # the aggregate has to forget on it too.
+        age = _days_since(record.get("last_seen"))
+        if age is not None and age > STALE_AFTER_DAYS:
+            continue
+
         studied += 1
 
         seen: set[tuple[str, str]] = set()
         for state, entries in (
-            ("open", record.get("open_confusions", {})),
+            # Through `open_confusions`, so the 90-day cutoff that the session
+            # path applies applies here too. Reading the record directly let a
+            # class report count confusions from a cohort that has since left,
+            # and it never states a date, so nobody could notice. A confusion
+            # that was SETTLED does not go stale in the same way: it is a thing
+            # the student demonstrated, not a thing still hanging over them.
+            ("open", open_confusions(profile, study_set_id)),
             ("settled", record.get("resolved_confusions", {})),
         ):
             for flat, entry in entries.items():

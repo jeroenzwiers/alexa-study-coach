@@ -5,11 +5,26 @@
   "level": "secondary",
   "source_note": "Bounded set covering security, execution, memory, and data concepts.",
   "confusable_pairs": [
-    ["c1", "c2"],
-    ["c3", "c4"],
-    ["c5", "c6"],
-    ["c7", "c8"],
-    ["c9", "c10"]
+    [
+      "c1",
+      "c2"
+    ],
+    [
+      "c3",
+      "c4"
+    ],
+    [
+      "c5",
+      "c6"
+    ],
+    [
+      "c7",
+      "c8"
+    ],
+    [
+      "c9",
+      "c10"
+    ]
   ],
   "cards": [
     {
@@ -24,7 +39,10 @@
       "difficulty": 1,
       "hint": "It checks identity before access is considered.",
       "explanation": "Authentication verifies an identity, often with a password, token, or biometric.",
-      "misconception": "Authentication verifies identity; authorization decides which actions that identity may take."
+      "misconception": "Authentication verifies identity; authorization decides which actions that identity may take.",
+      "near_misses": [
+        "identification"
+      ]
     },
     {
       "id": "c2",
@@ -43,17 +61,28 @@
     {
       "id": "c3",
       "question": "What is it called when several tasks make progress during overlapping time periods?",
-      "accepted": ["concurrency", "concurrent execution", "concurrent tasks"],
+      "accepted": [
+        "concurrency",
+        "concurrent execution",
+        "concurrent tasks"
+      ],
       "canonical": "Concurrency.",
       "difficulty": 2,
       "hint": "The tasks may take turns on one processor.",
       "explanation": "Concurrency means multiple tasks are in progress during overlapping periods, even if only one runs at a time.",
-      "misconception": "Concurrency overlaps task progress; parallelism runs work simultaneously on multiple execution units."
+      "misconception": "Concurrency overlaps task progress; parallelism runs work simultaneously on multiple execution units.",
+      "near_misses": [
+        "asynchrony"
+      ]
     },
     {
       "id": "c4",
       "question": "What is it called when independent tasks run at the same time on multiple processors or cores?",
-      "accepted": ["parallelism", "parallel execution", "parallel processing"],
+      "accepted": [
+        "parallelism",
+        "parallel execution",
+        "parallel processing"
+      ],
       "canonical": "Parallelism.",
       "difficulty": 2,
       "hint": "Think of truly simultaneous work on separate cores.",
@@ -63,7 +92,12 @@
     {
       "id": "c5",
       "question": "Which memory area follows last in, first out order for function calls?",
-      "accepted": ["the stack", "stack memory", "call stack"],
+      "accepted": [
+        "the stack",
+        "stack memory",
+        "call stack",
+        "last in first out memory"
+      ],
       "canonical": "The stack.",
       "difficulty": 1,
       "hint": "The most recent call is removed first.",
@@ -73,7 +107,12 @@
     {
       "id": "c6",
       "question": "Which memory area stores dynamically allocated objects during a program's lifetime?",
-      "accepted": ["the heap", "heap memory", "dynamic memory"],
+      "accepted": [
+        "the heap",
+        "heap memory",
+        "dynamic memory",
+        "the free store"
+      ],
       "canonical": "The heap.",
       "difficulty": 1,
       "hint": "It is used when objects are allocated dynamically.",
@@ -83,7 +122,11 @@
     {
       "id": "c7",
       "question": "What program translates an entire source program before it runs?",
-      "accepted": ["a compiler", "compiler", "compiled translator"],
+      "accepted": [
+        "a compiler",
+        "compiler",
+        "compiled translator"
+      ],
       "canonical": "A compiler.",
       "difficulty": 2,
       "hint": "It produces a translated program ahead of execution.",
@@ -93,7 +136,11 @@
     {
       "id": "c8",
       "question": "What program translates and executes source instructions as the program runs?",
-      "accepted": ["an interpreter", "interpreter", "interpreted runtime"],
+      "accepted": [
+        "an interpreter",
+        "interpreter",
+        "interpreted runtime"
+      ],
       "canonical": "An interpreter.",
       "difficulty": 2,
       "hint": "Translation happens while the program is running.",
@@ -103,27 +150,47 @@
     {
       "id": "c9",
       "question": "What process transforms readable data into protected ciphertext using a key?",
-      "accepted": ["encryption", "data encryption", "encrypting data"],
+      "accepted": [
+        "encryption",
+        "data encryption",
+        "encrypting data"
+      ],
       "canonical": "Encryption.",
       "difficulty": 2,
       "hint": "The protected result can be reversed with the right key.",
       "explanation": "Encryption transforms plaintext into ciphertext so the data can be recovered only with the appropriate key.",
-      "misconception": "Encryption protects data with a reversible key; hashing creates a one-way digest for comparison."
+      "misconception": "Encryption protects data with a reversible key; hashing creates a one-way digest for comparison.",
+      "near_misses": [
+        "encoding",
+        "compression"
+      ]
     },
     {
       "id": "c10",
       "question": "What process creates a fixed-size one-way digest of data?",
-      "accepted": ["hashing", "a hash function", "data hashing"],
+      "accepted": [
+        "hashing",
+        "a hash function",
+        "data hashing",
+        "a message digest"
+      ],
       "canonical": "Hashing.",
       "difficulty": 2,
       "hint": "The result is designed for comparison, not recovery of the original.",
       "explanation": "Hashing maps data to a digest that is useful for integrity checks and comparisons.",
-      "misconception": "Hashing creates a one-way digest; encryption creates ciphertext that can be reversed with a key."
+      "misconception": "Hashing creates a one-way digest; encryption creates ciphertext that can be reversed with a key.",
+      "near_misses": [
+        "a checksum"
+      ]
     },
     {
       "id": "c11",
       "question": "What structure stores recently used data so future access can be faster?",
-      "accepted": ["a cache", "cache memory", "caching"],
+      "accepted": [
+        "a cache",
+        "cache memory",
+        "caching"
+      ],
       "canonical": "A cache.",
       "difficulty": 1,
       "hint": "It keeps a nearby copy for speed.",
@@ -133,12 +200,20 @@
     {
       "id": "c12",
       "question": "What system organizes and stores data for durable retrieval and updates?",
-      "accepted": ["a database", "database system", "data store"],
+      "accepted": [
+        "a database",
+        "database system",
+        "data store"
+      ],
       "canonical": "A database.",
       "difficulty": 1,
       "hint": "It is the durable source rather than a temporary speed copy.",
       "explanation": "A database stores organized data durably and supports retrieval, updates, and queries.",
-      "misconception": "A database is durable storage; a cache is a temporary speed-oriented copy."
+      "misconception": "A database is durable storage; a cache is a temporary speed-oriented copy.",
+      "near_misses": [
+        "a data warehouse",
+        "a spreadsheet"
+      ]
     }
   ]
 }

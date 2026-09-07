@@ -30,6 +30,7 @@ SET = "biology_cells"
 OSMOSIS, DIFFUSION = "c8", "c9"
 MITO, CHLORO = "c1", "c6"
 NUCLEUS, NUCLEOLUS = "c4", "c7"
+WALL, MEMBRANE = "c3", "c2"      # only ever confused by the synthetic runs below
 
 
 def profile(name: str, *, open_pairs=(), settled_pairs=()) -> None:
@@ -76,6 +77,38 @@ def build_class() -> None:
     # a pattern, and must not be reported as one.
     profile("pupil_8", open_pairs=[(NUCLEUS, NUCLEOLUS)])
 
+    # Three synthetic runs - a smoke test, a demo rehearsal, a generalization
+    # sweep - all sharing a confusion no real student here has. Three is above
+    # the privacy floor, so if these were counted the report would announce a
+    # pattern that exists only in the harness, and would call them pupils.
+    for name in ("__smoke__", "__demo_abc123__", "__generalization_biology_cells_9f__"):
+        profile(name, open_pairs=[(WALL, MEMBRANE)])
+
+
+def stale_report_drops_confusions() -> bool:
+    """A class report must forget on the same 90-day clock the session does.
+
+    `topic_map` read `open_confusions` straight off the record instead of going
+    through the function that applies the cutoff, so a teacher was told seven of
+    her students share a confusion when it may have been last year's cohort -
+    and the report states no date, so there is no way to notice.
+    """
+    old_day = (datetime.date.today() - datetime.timedelta(days=400)).isoformat()
+    for profile in history.all_profiles():
+        record = profile.get("sets", {}).get(SET)
+        if not record:
+            continue
+        record["last_seen"] = old_day          # the whole cohort has moved on
+        for entry in record.get("open_confusions", {}).values():
+            entry["last_seen"] = old_day
+        history.save(profile)
+    report = app.class_report(SET)
+    lower = report.lower()
+    # Settled confusions do not age out on their own - so ageing only those
+    # would still have reported last year's class through the three students
+    # who had settled osmosis against diffusion. The profile has to drop out.
+    return "osmosis" not in lower and "diffusion" not in lower and "no one has practised" in lower
+
 
 def main() -> int:
     build_class()
@@ -118,6 +151,16 @@ def main() -> int:
         "rapport bevat geen enkele leerlingnaam": "pupil" not in lower,
         "minimum nul blijft privacyvloer twee": "nucleolus" not in app.class_report(SET, minimum=0).lower(),
         "minimum een blijft privacyvloer twee": "nucleolus" not in app.class_report(SET, minimum=1).lower(),
+        "synthetische runs tellen niet als leerling": studied == 9,
+        "synthetisch patroon staat niet in de aggregatie": not any(
+            set(c.pair) == {WALL, MEMBRANE} for c in confusions
+        ),
+        "synthetisch patroon haalt het rapport niet": "cell wall" not in lower,
+        "onbekende set wordt niet stil vervangen": "do not have that set"
+            in app.class_report("een_set_die_niet_bestaat"),
+        "onbekende set noemt wel wat er wel is": "The Cell"
+            in app.class_report("een_set_die_niet_bestaat"),
+        "verouderde verwarringen tellen niet meer mee": stale_report_drops_confusions(),
     }
     for label, ok in checks.items():
         print(f"  {'OK  ' if ok else 'FOUT'} {label}")

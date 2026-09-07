@@ -8,17 +8,32 @@
     {
       "id": "c1",
       "question": "Which organelle releases energy from glucose?",
-      "accepted": ["mitochondria", "mitochondrion", "the mitochondria"],
+      "accepted": [
+        "mitochondria",
+        "mitochondrion",
+        "the mitochondria",
+        "the powerhouse of the cell",
+        "the powerhouse"
+      ],
       "canonical": "The mitochondria.",
       "difficulty": 1,
       "hint": "It's the one that works on food, not light.",
       "explanation": "Mitochondria carry out aerobic respiration, turning glucose and oxygen into ATP, the cell's usable energy.",
-      "misconception": "Chloroplasts capture energy from light; mitochondria release it from food."
+      "misconception": "Chloroplasts capture energy from light; mitochondria release it from food.",
+      "near_misses": [
+        "respiration",
+        "photosynthesis"
+      ]
     },
     {
       "id": "c2",
       "question": "What does the cell membrane control?",
-      "accepted": ["what enters and leaves the cell", "what goes in and out", "substances entering and leaving", "transport in and out of the cell"],
+      "accepted": [
+        "what enters and leaves the cell",
+        "what goes in and out",
+        "substances entering and leaving",
+        "transport in and out of the cell"
+      ],
       "canonical": "What enters and leaves the cell.",
       "difficulty": 2,
       "hint": "Think about traffic, not scaffolding.",
@@ -28,7 +43,11 @@
     {
       "id": "c3",
       "question": "Which structure gives a plant cell its shape and support?",
-      "accepted": ["cell wall", "the cell wall", "a cell wall"],
+      "accepted": [
+        "cell wall",
+        "the cell wall",
+        "a cell wall"
+      ],
       "canonical": "The cell wall.",
       "difficulty": 1,
       "hint": "It's the rigid layer on the outside.",
@@ -38,17 +57,37 @@
     {
       "id": "c4",
       "question": "Where is the genetic material of a cell found?",
-      "accepted": ["nucleus", "in the nucleus", "the nucleus"],
+      "accepted": [
+        "nucleus",
+        "in the nucleus",
+        "the nucleus",
+        "the control centre of the cell",
+        "the control center of the cell",
+        "the control centre",
+        "the control center"
+      ],
       "canonical": "In the nucleus.",
       "difficulty": 1,
       "hint": "It's the control centre, near the middle.",
       "explanation": "The nucleus holds chromosomes made of DNA, which instruct the cell.",
-      "misconception": "The nucleus stores the instructions; ribosomes carry them out."
+      "misconception": "The nucleus stores the instructions; ribosomes carry them out.",
+      "near_misses": [
+        "the nuclear membrane",
+        "dna",
+        "the chromosomes"
+      ]
     },
     {
       "id": "c5",
       "question": "What is the job of a ribosome?",
-      "accepted": ["protein synthesis", "making proteins", "to make proteins", "builds proteins", "makes protein"],
+      "accepted": [
+        "protein synthesis",
+        "making proteins",
+        "to make proteins",
+        "builds proteins",
+        "makes protein",
+        "protein production"
+      ],
       "canonical": "Making proteins.",
       "difficulty": 2,
       "hint": "It builds something out of amino acids.",
@@ -58,17 +97,27 @@
     {
       "id": "c6",
       "question": "Which organelle captures light energy in a plant cell?",
-      "accepted": ["chloroplast", "chloroplasts", "the chloroplasts"],
+      "accepted": [
+        "chloroplast",
+        "chloroplasts",
+        "the chloroplasts"
+      ],
       "canonical": "The chloroplasts.",
       "difficulty": 1,
       "hint": "It's the one that makes the plant green.",
       "explanation": "Chloroplasts contain chlorophyll and carry out photosynthesis, capturing light to make glucose.",
-      "misconception": "Chloroplasts capture light energy; mitochondria release energy from food."
+      "misconception": "Chloroplasts capture light energy; mitochondria release energy from food.",
+      "near_misses": [
+        "chlorophyll"
+      ]
     },
     {
       "id": "c7",
       "question": "Which structure inside the nucleus makes ribosomes?",
-      "accepted": ["nucleolus", "the nucleolus"],
+      "accepted": [
+        "nucleolus",
+        "the nucleolus"
+      ],
       "canonical": "The nucleolus.",
       "difficulty": 3,
       "hint": "It sits inside the nucleus, and its name is nearly the same.",
@@ -78,17 +127,25 @@
     {
       "id": "c8",
       "question": "What is the movement of water across a partially permeable membrane called?",
-      "accepted": ["osmosis"],
+      "accepted": [
+        "osmosis"
+      ],
       "canonical": "Osmosis.",
       "difficulty": 2,
       "hint": "This one is only ever about water.",
       "explanation": "Osmosis is the movement of water from a dilute solution to a concentrated one through a partially permeable membrane.",
-      "misconception": "Osmosis moves water only; diffusion moves any particle down its concentration gradient."
+      "misconception": "Osmosis moves water only; diffusion moves any particle down its concentration gradient.",
+      "near_misses": [
+        "active transport",
+        "meiosis"
+      ]
     },
     {
       "id": "c9",
       "question": "What is the movement of particles from a high to a low concentration called?",
-      "accepted": ["diffusion"],
+      "accepted": [
+        "diffusion"
+      ],
       "canonical": "Diffusion.",
       "difficulty": 2,
       "hint": "This one works for any particle, not just water.",
@@ -98,37 +155,75 @@
     {
       "id": "c10",
       "question": "Which part of a plant cell stores cell sap and keeps the cell firm?",
-      "accepted": ["vacuole", "the vacuole", "permanent vacuole", "the permanent vacuole"],
+      "accepted": [
+        "vacuole",
+        "the vacuole",
+        "permanent vacuole",
+        "the permanent vacuole"
+      ],
       "canonical": "The vacuole.",
       "difficulty": 1,
       "hint": "It's the large space in the middle of a plant cell.",
       "explanation": "The permanent vacuole is filled with cell sap and presses outwards, keeping the plant cell turgid.",
-      "misconception": "The vacuole is one large permanent store; vesicles are small parcels in transit."
+      "misconception": "The vacuole is one large permanent store; vesicles are small parcels in transit.",
+      "near_misses": [
+        "a vesicle",
+        "a lysosome"
+      ]
     },
     {
       "id": "c11",
       "question": "Where do most of the cell's chemical reactions take place?",
-      "accepted": ["cytoplasm", "in the cytoplasm", "the cytoplasm"],
+      "accepted": [
+        "cytoplasm",
+        "in the cytoplasm",
+        "the cytoplasm",
+        "the jelly of the cell"
+      ],
       "canonical": "In the cytoplasm.",
       "difficulty": 1,
       "hint": "It's the jelly that fills the cell.",
       "explanation": "The cytoplasm is the watery jelly holding the organelles, and most reactions of the cell happen in it.",
-      "misconception": "The cytoplasm is where reactions happen; the membrane only surrounds it."
+      "misconception": "The cytoplasm is where reactions happen; the membrane only surrounds it.",
+      "near_misses": [
+        "the cell membrane wait no",
+        "the endoplasmic reticulum"
+      ]
     },
     {
       "id": "c12",
       "question": "What type of cell has no nucleus?",
-      "accepted": ["prokaryotic cell", "a prokaryotic cell", "prokaryote", "a prokaryote", "prokaryotic"],
+      "accepted": [
+        "prokaryotic cell",
+        "a prokaryotic cell",
+        "prokaryote",
+        "a prokaryote",
+        "prokaryotic",
+        "a bacterial cell",
+        "bacterial cell"
+      ],
       "canonical": "A prokaryotic cell.",
       "difficulty": 3,
       "hint": "Bacteria are the usual example.",
       "explanation": "Prokaryotic cells, such as bacteria, keep their DNA loose in the cytoplasm instead of in a nucleus.",
-      "misconception": "Prokaryotic cells have no nucleus; eukaryotic cells do."
+      "misconception": "Prokaryotic cells have no nucleus; eukaryotic cells do.",
+      "near_misses": [
+        "a eukaryotic cell",
+        "a virus"
+      ]
     },
     {
       "id": "c13",
       "question": "Which organelle packages proteins ready to leave the cell?",
-      "accepted": ["golgi apparatus", "the golgi apparatus", "golgi body", "the golgi", "golgi"],
+      "accepted": [
+        "golgi apparatus",
+        "the golgi apparatus",
+        "golgi body",
+        "the golgi",
+        "golgi",
+        "the packaging centre",
+        "the packaging center"
+      ],
       "canonical": "The Golgi apparatus.",
       "difficulty": 3,
       "hint": "It's the packaging and posting department.",

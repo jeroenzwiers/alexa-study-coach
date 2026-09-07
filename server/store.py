@@ -32,6 +32,13 @@ class Card:
     misconception: str
     difficulty: int = 2
     hint: str = ""
+    # Concepts from this subject that a student reaches for INSTEAD, and that
+    # this study set has no card for. Without them the grader has nowhere to put
+    # such an answer: nearest-neighbour over the cards alone hands "the mode" to
+    # the median and calls it right, and the student walks away uncorrected.
+    # Declaring them makes the closed set closed over the classroom's vocabulary
+    # rather than over the deck's.
+    near_misses: list[str] = field(default_factory=list)
 
     def spoken_hint(self) -> str:
         """A nudge for a struggling student that does not hand over the answer."""
@@ -48,6 +55,19 @@ class StudySet:
     title: str
     level: str
     cards: list[Card]
+    # Which pairs the set's author declared confusable. Loaded because the
+    # support scaffold has to offer the student a REAL distinction to choose
+    # between; picking any card of similar difficulty offered "the perimeter,
+    # or the coefficient", which is a free mark handed out at the exact moment
+    # the session decided the student needed help.
+    confusable_pairs: list[tuple[str, str]] = field(default_factory=list)
+
+    def confusable_with(self, card_id: str) -> list[str]:
+        return [
+            b if a == card_id else a
+            for a, b in self.confusable_pairs
+            if card_id in (a, b)
+        ]
 
     def card(self, card_id: str) -> Card | None:
         return next((c for c in self.cards if c.id == card_id), None)
@@ -70,6 +90,12 @@ class StudySet:
                         note=None if is_target else card.misconception,
                     )
                 )
+            # Named wrong answers with no card of their own. `card_id=None` is
+            # what marks them: the answer is wrong, and there is no pair to
+            # record, because the student did not confuse two cards - they
+            # reached outside the set entirely.
+            for phrasing in card.near_misses:
+                out.append(Candidate(text=phrasing, correct=False, card_id=None))
         return out
 
 
@@ -80,6 +106,11 @@ def _load(path: pathlib.Path) -> StudySet:
         subject=raw["subject"],
         title=raw["title"],
         level=raw.get("level", ""),
+        confusable_pairs=[
+            (pair[0], pair[1])
+            for pair in raw.get("confusable_pairs", []) or []
+            if len(pair) == 2
+        ],
         cards=[
             Card(
                 id=c["id"],
@@ -90,6 +121,7 @@ def _load(path: pathlib.Path) -> StudySet:
                 misconception=c.get("misconception", ""),
                 difficulty=int(c.get("difficulty", 2)),
                 hint=c.get("hint", ""),
+                near_misses=list(c.get("near_misses", []) or []),
             )
             for c in raw["cards"]
         ],
@@ -114,6 +146,16 @@ RESOLVE_STREAK = 2
 # A confusion that returns after being drilled is worth drilling again, but not
 # forever; past this the session stops nagging and leaves it for the report.
 MAX_CONTRAST_ROUNDS = 2
+
+# The most a session may grow beyond the length it promised. Drilling is meant
+# to lengthen a session, but `planned` only ever gated the drawing of FRESH
+# cards: forced contrast questions and probes bypassed it entirely, so a student
+# who kept missing could be held indefinitely - sessions of two hundred
+# questions, and closed loops of the same six. A revision session that has
+# doubled has stopped being the session the student agreed to, and whatever is
+# still unresolved at that point belongs in the report rather than in one more
+# question.
+MAX_SESSION_MULTIPLE = 2
 
 DEFAULT_LENGTH = 8
 
@@ -140,6 +182,7 @@ class Session:
     deferred: list = field(default_factory=list)      # (ask once asked >= n, card id)
     planned: int = DEFAULT_LENGTH
     bonus: int = 0                                    # extra turns added by drilling
+    closing: bool = False                             # draining owed probes, taking no new ones
     asked: int = 0
     correct: int = 0
     missed: list[str] = field(default_factory=list)
@@ -151,6 +194,8 @@ class Session:
     # misconception rather than a slip.
     confusions: Counter = field(default_factory=Counter)   # pair -> times seen
     seeded: Counter = field(default_factory=Counter)        # of which, carried in from before
+    written: Counter = field(default_factory=Counter)       # ...and how much is already on disk
+    persisted: bool = False                                 # has this session been filed at all
     last_direction: dict = field(default_factory=dict)     # pair -> (asked, said)
     contested: set = field(default_factory=set)            # pairs being drilled now
     resolved: set = field(default_factory=set)             # pairs settled this session
@@ -177,8 +222,13 @@ class Session:
         return self.current is None
 
     @property
+    def ceiling(self) -> int:
+        """The hard stop, however much drilling is still outstanding."""
+        return max(1, self.planned) * MAX_SESSION_MULTIPLE
+
+    @property
     def total_questions(self) -> int:
-        return self.planned + self.bonus
+        return min(self.planned + self.bonus, self.ceiling)
 
     def elapsed_ms(self) -> float | None:
         if self.asked_at is None:
@@ -200,7 +250,19 @@ class Session:
 
         ripe = self.confusions[key] >= CONFUSION_THRESHOLD
         room = self.contrast_rounds[key] < MAX_CONTRAST_ROUNDS
-        if ripe and room and key not in self.contested:
+
+        # Only a drill that is actually in flight should block another one.
+        # `contested` cannot answer that question: it also means "this pair is
+        # being tracked for resolution", and a confusion carried in from a
+        # previous session is put there before any drill has run. Gating on it
+        # made the carried pair unreachable - the student came back still
+        # confused, missed it again, and the drill that exists for exactly that
+        # moment could never fire. MAX_CONTRAST_ROUNDS is what limits repeats.
+        drilling = (
+            self.pending_contrast is not None
+            and pair_key(*self.pending_contrast) == key
+        )
+        if ripe and room and not drilling:
             return (asked_card, said_card)
         return None
 
@@ -223,6 +285,17 @@ class Session:
                 self.resolved.add(key)
                 settled.append(key)
         return settled
+
+    def fresh_confusion_count(self, key: tuple[str, str]) -> int:
+        """Times this pair was missed THIS session, excluding what it arrived with.
+
+        `start_session` seeds a carried confusion's counter so the drill treats
+        it as already ripe, and `seeded` records how much of the count came in
+        that way. The total is the right number for "mixed up N times so far";
+        it is the wrong number for any sentence about tonight, where the seed
+        would be counted as errors the student did not just make.
+        """
+        return max(0, self.confusions[key] - self.seeded.get(key, 0))
 
     def dominant_confusion(self) -> tuple[tuple[str, str], int] | None:
         """The confusion the errors keep returning to, if one is still open."""
@@ -274,7 +347,10 @@ def start_session(
     pool = [c.id for c in study_set.cards]
     random.shuffle(pool)
 
-    planned = min(length or DEFAULT_LENGTH, len(pool))
+    # Clamped at both ends. Alexa+ passes through whatever it understood the
+    # student to have asked for, so a negative length is a thing that arrives,
+    # and it used to leave the session with no first card and crash the tool.
+    planned = max(1, min(length or DEFAULT_LENGTH, len(pool)))
     session = Session(
         id=uuid.uuid4().hex[:12],
         study_set_id=study_set_id,
@@ -312,6 +388,12 @@ def advance(session: Session) -> str | None:
     Deliberately does not touch `pending_contrast`: queue_contrast sets it
     immediately before this runs, and the turn that consumes it clears it.
     """
+    if session.asked >= session.ceiling:
+        # Nothing outranks the ceiling - not a forced drill, not an owed probe.
+        session.current = None
+        session.asked_at = None
+        return None
+
     due = next((item for item in session.deferred if session.asked >= item[0]), None)
     if session.forced:
         session.current = session.forced.pop(0)
@@ -319,7 +401,21 @@ def advance(session: Session) -> str | None:
         session.deferred.remove(due)
         session.current = due[1]
     elif session.asked >= session.planned or not session.pool:
-        session.current = None
+        # The session has reached its length or run out of fresh cards, but a
+        # probe may still be outstanding: the other side of a suspected
+        # confusion, pulled from the pool and promised a turn a couple of
+        # questions downstream that never arrived. Ending here would abandon
+        # the very diagnosis the probe exists to make - a miss late in the
+        # session would silently never be tested both ways round - so a
+        # question we already owe is asked before the session closes.
+        if session.deferred:
+            session.closing = True     # honour what is owed, but take on nothing new
+            session.deferred.sort(key=lambda item: item[0])
+            _, session.current = session.deferred.pop(0)
+            if session.asked >= session.planned:
+                session.bonus += 1     # owed beyond the planned length
+        else:
+            session.current = None
     else:
         study_set = STUDY_SETS[session.study_set_id]
         session.current = _pick_by_difficulty(session.pool, study_set, session.difficulty)
@@ -345,6 +441,13 @@ def probe(session: Session, card_id: str, delay: int = 2) -> None:
     if card_id == session.current or card_id in session.forced:
         return
     if any(cid == card_id for _, cid in session.deferred):
+        return
+    if session.closing:
+        # The session is already asking the questions it owes and is on its way
+        # out. A student who keeps getting the pair wrong would otherwise
+        # schedule a fresh probe on every drained turn and the session would
+        # never end. What is still unresolved belongs in the report, not in one
+        # more question.
         return
     if card_id in session.pool:
         session.pool.remove(card_id)     # it was going to be asked anyway

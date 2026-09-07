@@ -69,19 +69,73 @@ def play(length: int, confused: bool, label: str) -> str:
 
 
 def saved() -> dict:
-    path = history.DATA_DIR / f"{STUDENT}.json"
+    path = history.profile_path(STUDENT)
     return json.loads(path.read_text(encoding="utf-8"))["sets"]["biology_cells"]
 
 
 def age_by_a_day() -> None:
     """Backdate the profile so the returning line has to phrase a real gap."""
-    path = history.DATA_DIR / f"{STUDENT}.json"
+    path = history.profile_path(STUDENT)
     data = json.loads(path.read_text(encoding="utf-8"))
     yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
     data["sets"]["biology_cells"]["last_seen"] = yesterday
     for entry in data["sets"]["biology_cells"]["open_confusions"].values():
         entry["last_seen"] = yesterday
     path.write_text(json.dumps(data), encoding="utf-8")
+
+
+def abandonment_checks() -> dict:
+    """A session put down halfway must still be remembered.
+
+    `_remember` used to run on exactly one path - the turn that answers the last
+    question - so a student who stopped early wrote nothing at all. The students
+    likeliest to stop are the ones with the most confusions, and drilling makes
+    their session the longest, so the loss was concentrated on exactly the
+    evenings worth keeping. It also silently narrowed the class report to
+    students who finish.
+
+    Also checks the other half: filing on every turn must not count the session
+    more than once, or inflate a confusion by re-adding it on each write.
+    """
+    study_set = store.STUDY_SETS["biology_cells"]
+    pair = ("c1", "c6")
+
+    def play(student: str, stop_after: int | None) -> None:
+        random.seed(5)
+        turn = app.start_practice("biology_cells", length=13, student=student)
+        asked = 0
+        while not turn.finished and turn.question:
+            asked += 1
+            card = next(c for c in study_set.cards if c.question == turn.question)
+            other = pair[1] if card.id == pair[0] else pair[0]
+            said = (
+                study_set.card(other).accepted[0] if card.id in pair else card.accepted[0]
+            )
+            turn = app.submit_answer(turn.session_id, said)
+            if stop_after is not None and asked >= stop_after:
+                return          # the student puts the speaker down
+
+    def record(student: str) -> dict:
+        path = history.profile_path(student)
+        if not path.exists():
+            return {}
+        return json.loads(path.read_text(encoding="utf-8"))["sets"]["biology_cells"]
+
+    play("__abandon_half__", stop_after=6)
+    half = record("__abandon_half__")
+    play("__abandon_full__", stop_after=None)
+    full = record("__abandon_full__")
+
+    return {
+        "afgebroken sessie wordt toch bewaard": bool(half),
+        "afgebroken sessie bewaart de verwarring": bool(half.get("open_confusions")),
+        "afgebroken sessie telt als een sessie": half.get("sessions") == 1,
+        "uitgespeelde sessie telt ook maar een keer": full.get("sessions") == 1,
+        "schrijven per beurt telt de verwarring niet dubbel": (
+            0 < half["open_confusions"]["c1|c6"]["count"]
+            <= full["open_confusions"]["c1|c6"]["count"]
+        ),
+    }
 
 
 def main() -> int:
@@ -121,6 +175,7 @@ def main() -> int:
         "voortgang over sessies heen is op te vragen":
             "settled for good" in app.student_progress(STUDENT, "biology_cells").lower(),
     }
+    checks.update(abandonment_checks())
     for label, ok in checks.items():
         print(f"  {'OK  ' if ok else 'FOUT'} {label}")
     return 0 if all(checks.values()) else 1

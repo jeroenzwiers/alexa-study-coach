@@ -15,6 +15,9 @@ So no set ships unchecked - generated or hand-written. The checks below run the
 real `grading.grade` from server/, not a copy of it:
 
     own phrasings       every accepted phrasing must attribute to its own card
+    near-misses         every concept the set names but does not teach must
+                        grade WRONG against every card - this is the only check
+                        that can see a word the set does not know
     cross-attribution   said against a DIFFERENT card's question, a phrasing must
                         still be attributed to the card it belongs to. This is the
                         whole diagnosis in one assertion: it is how the coach knows
@@ -43,11 +46,17 @@ from grading import Candidate, grade, normalise   # the live grader, not a copy
 
 def candidates_for(cards: list[dict], card_id: str) -> list[Candidate]:
     """The same closed candidate set store.StudySet.candidates_for builds."""
-    return [
+    pool = [
         Candidate(text=phrasing, correct=(card["id"] == card_id), card_id=card["id"])
         for card in cards
         for phrasing in card.get("accepted", [])
     ]
+    pool += [
+        Candidate(text=phrasing, correct=False, card_id=None)
+        for card in cards
+        for phrasing in card.get("near_misses", []) or []
+    ]
+    return pool
 
 
 def _structure(cards: list[dict], ids: set[str]) -> list[str]:
@@ -131,6 +140,34 @@ def verify(cards: list[dict]) -> tuple[list[str], dict]:
                         f"lands on {landed or 'nothing'} - the misconception could not be named"
                     )
 
+    # The hole this checker could not previously see. Every check above asks
+    # whether a phrasing that IS in the set lands on the right card. None of
+    # them can catch a word that is NOT in the set - and that is where both
+    # grader failures live: an unknown answer is either accepted as correct or
+    # snapped to the nearest card, depending only on which happens to be
+    # nearest. So a set must name the concepts its students reach for and it
+    # does not teach, and each one must actually grade wrong.
+    near_ok = near_bad = 0
+    declared = sum(len(c.get("near_misses", []) or []) for c in cards)
+    if not declared:
+        problems.append(
+            "no card declares `near_misses` - the set cannot tell a wrong "
+            "concept from a mangled right one, and an answer it has no word "
+            "for will be marked correct"
+        )
+    for card in cards:
+        for phrasing in card.get("near_misses", []) or []:
+            for target in cards:
+                verdict = grade(phrasing, candidates_for(cards, target["id"]))
+                if verdict.correct:
+                    near_bad += 1
+                    problems.append(
+                        f"{card['id']}: near-miss '{phrasing}' grades as a CORRECT "
+                        f"answer to {target['id']} - it must never be accepted"
+                    )
+                else:
+                    near_ok += 1
+
     # Only meaningful for sets that carry generation labels.
     pairs_ok = pairs_bad = 0
     for card in cards:
@@ -153,6 +190,8 @@ def verify(cards: list[dict]) -> tuple[list[str], dict]:
         "own_bad": own_bad,
         "cross_ok": cross_ok,
         "cross_bad": cross_bad,
+        "near_ok": near_ok,
+        "near_bad": near_bad,
         "pairs_ok": pairs_ok,
         "pairs_bad": pairs_bad,
         "difficulty": {n: sum(1 for c in cards if c.get("difficulty", 2) == n) for n in (1, 2, 3)},
@@ -164,6 +203,7 @@ def report(name: str, problems: list[str], stats: dict) -> None:
     print(f"  cards            : {stats['cards']}, difficulty {stats['difficulty']}")
     print(f"  own phrasings    : {stats['own_ok']} attributed to their own card, {stats['own_bad']} not")
     print(f"  cross-attributed : {stats['cross_ok']} land on the right card, {stats['cross_bad']} do not")
+    print(f"  near-misses      : {stats['near_ok']} correctly refused, {stats['near_bad']} wrongly accepted")
     if stats["pairs_ok"] or stats["pairs_bad"]:
         print(f"  labelled pairs   : {stats['pairs_ok']} land on their partner, {stats['pairs_bad']} do not")
     if problems:

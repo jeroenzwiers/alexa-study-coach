@@ -1,0 +1,228 @@
+{
+  "id": "algebra_foundations",
+  "subject": "Mathematics",
+  "title": "Algebra Foundations",
+  "level": "secondary",
+  "source_note": "Bounded set covering the NAMED distinctions a first algebra course rests on: the two averages, the parts of an expression, the two intercepts, factors against multiples, perimeter against area, and an equation against an expression. Deliberately not arithmetic. The grader attributes a spoken answer to the nearest candidate in a closed set of named answers, so a card whose answer is a number has nothing to be confused WITH and no misconception to name. What this set can diagnose is a student reaching for the wrong CONCEPT; what it cannot diagnose is a slip in the working.",
+  "confusable_pairs": [
+    [
+      "c1",
+      "c2"
+    ],
+    [
+      "c3",
+      "c4"
+    ],
+    [
+      "c5",
+      "c6"
+    ],
+    [
+      "c7",
+      "c8"
+    ],
+    [
+      "c9",
+      "c10"
+    ]
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "question": "What do you call the middle value of a data set once the values are put in order?",
+      "accepted": [
+        "the median",
+        "median",
+        "the median value",
+        "the medium",
+        "medium"
+      ],
+      "canonical": "The median.",
+      "difficulty": 1,
+      "hint": "You line the numbers up and walk to the middle one.",
+      "explanation": "The median is the middle value once the data is ordered, so an extreme value barely moves it.",
+      "misconception": "The median is the middle of the ordered list; the mean is the total shared out evenly.",
+      "near_misses": [
+        "the mode",
+        "the midpoint",
+        "the middle number"
+      ]
+    },
+    {
+      "id": "c2",
+      "question": "What do you call the total of all the values divided by how many there are?",
+      "accepted": [
+        "the mean",
+        "mean",
+        "the average",
+        "the arithmetic mean"
+      ],
+      "canonical": "The mean.",
+      "difficulty": 1,
+      "hint": "You add everything up, then share it out.",
+      "explanation": "The mean adds every value and divides by the count, so one extreme value drags it.",
+      "misconception": "The mean is the total shared out evenly; the median is the middle of the ordered list.",
+      "near_misses": [
+        "the sum",
+        "the total",
+        "the range"
+      ]
+    },
+    {
+      "id": "c3",
+      "question": "In the expression 7x, what do you call the number 7 multiplying the variable?",
+      "accepted": [
+        "the coefficient",
+        "coefficient",
+        "a coefficient",
+        "the multiplier"
+      ],
+      "canonical": "The coefficient.",
+      "difficulty": 1,
+      "hint": "It is attached to the letter and multiplies it.",
+      "explanation": "A coefficient is the number multiplying a variable, so in 7x the coefficient is 7.",
+      "misconception": "A coefficient multiplies a variable; a constant stands alone with no variable attached."
+    },
+    {
+      "id": "c4",
+      "question": "In the expression 7x plus 4, what do you call the number 4 standing on its own?",
+      "accepted": [
+        "the constant",
+        "constant",
+        "a constant",
+        "the constant term"
+      ],
+      "canonical": "The constant.",
+      "difficulty": 1,
+      "hint": "It never changes, whatever the letter turns out to be.",
+      "explanation": "A constant term has no variable attached, so its value does not change with x.",
+      "misconception": "A constant stands alone; a coefficient is the number multiplying a variable."
+    },
+    {
+      "id": "c5",
+      "question": "What do you call the point where a graph crosses the horizontal axis?",
+      "accepted": [
+        "the x intercept",
+        "x intercept",
+        "the ex intercept",
+        "the horizontal intercept"
+      ],
+      "canonical": "The x-intercept.",
+      "difficulty": 2,
+      "hint": "It is where the height is zero.",
+      "explanation": "At the x-intercept the graph meets the horizontal axis, so y is zero there.",
+      "misconception": "The x-intercept is where y is zero; the y-intercept is where x is zero."
+    },
+    {
+      "id": "c6",
+      "question": "What do you call the point where a graph crosses the vertical axis?",
+      "accepted": [
+        "the y intercept",
+        "y intercept",
+        "the why intercept",
+        "the vertical intercept"
+      ],
+      "canonical": "The y-intercept.",
+      "difficulty": 2,
+      "hint": "It is where you have gone nowhere sideways yet.",
+      "explanation": "At the y-intercept the graph meets the vertical axis, so x is zero there.",
+      "misconception": "The y-intercept is where x is zero; the x-intercept is where y is zero."
+    },
+    {
+      "id": "c7",
+      "question": "What do you call a whole number that divides exactly into a given number?",
+      "accepted": [
+        "a factor",
+        "factor",
+        "factors"
+      ],
+      "canonical": "A factor.",
+      "difficulty": 1,
+      "hint": "It fits into the number without a remainder.",
+      "explanation": "A factor divides a number exactly, so the factors of 12 include 1, 2, 3, 4, 6 and 12.",
+      "misconception": "A factor divides into the number; a multiple is what you get by multiplying it up.",
+      "near_misses": [
+        "a prime number"
+      ]
+    },
+    {
+      "id": "c8",
+      "question": "What do you call a number you reach by multiplying a given number by a whole number?",
+      "accepted": [
+        "a multiple",
+        "multiple",
+        "multiples"
+      ],
+      "canonical": "A multiple.",
+      "difficulty": 1,
+      "hint": "You count up in that number to reach it.",
+      "explanation": "A multiple comes from multiplying, so the multiples of 3 are 3, 6, 9, 12 and onwards.",
+      "misconception": "A multiple is reached by multiplying up; a factor divides into the number."
+    },
+    {
+      "id": "c9",
+      "question": "What do you call the total distance all the way around the outside of a shape?",
+      "accepted": [
+        "the perimeter",
+        "perimeter",
+        "the perimeter of the shape",
+        "the distance around the shape"
+      ],
+      "canonical": "The perimeter.",
+      "difficulty": 1,
+      "hint": "You walk right around the edge and add as you go.",
+      "explanation": "The perimeter is the total length of the boundary, so it is measured in ordinary length units.",
+      "misconception": "The perimeter is the distance around the edge; the area is the surface the shape covers.",
+      "near_misses": [
+        "the diameter",
+        "the circumference"
+      ]
+    },
+    {
+      "id": "c10",
+      "question": "What do you call the amount of surface a flat shape covers?",
+      "accepted": [
+        "the area",
+        "area",
+        "the area of the shape",
+        "the surface it covers"
+      ],
+      "canonical": "The area.",
+      "difficulty": 1,
+      "hint": "It is how much floor the shape would cover.",
+      "explanation": "The area measures the surface covered, so it is given in square units.",
+      "misconception": "The area is the surface covered; the perimeter is the distance around the edge."
+    },
+    {
+      "id": "c11",
+      "question": "What do you call two expressions joined by an equals sign?",
+      "accepted": [
+        "an equation",
+        "equation",
+        "equations"
+      ],
+      "canonical": "An equation.",
+      "difficulty": 1,
+      "hint": "It makes a claim that two things are the same.",
+      "explanation": "An equation states that two expressions are equal, which is what lets you solve for the unknown.",
+      "misconception": "An equation has an equals sign and can be solved; an expression has none and can only be simplified.",
+      "near_misses": [
+        "an inequality"
+      ]
+    },
+    {
+      "id": "c12",
+      "question": "What do you call a group of terms with no equals sign, which you can only simplify?",
+      "accepted": [
+        "an expression",
+        "expression",
+        "expressions"
+      ],
+      "canonical": "An expression.",
+      "difficulty": 2,
+      "hint": "Nothing is being claimed equal to anything.",
+      "explanation": "An expression is a combination of terms with no equals sign, so it can be simplified but not solved.",
+      "misconception": "An expression has no equals sign and cannot be solved; an equation does and can."
+    }
+  ]
+}

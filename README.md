@@ -66,25 +66,37 @@ Speech recognition mangles words phonetically, so a correct answer can arrive
 badly distorted while a genuinely different answer can be spelled almost
 identically:
 
-| spoken          | expected    | similarity | must be |
-| --------------- | ----------- | ---------- | ------- |
-| `"new clee us"` | `nucleus`   | **0.750**  | correct |
-| `"nucleus"`     | `nucleolus` | **0.875**  | wrong   |
+| spoken          | expected    | letter similarity | must be |
+| --------------- | ----------- | ----------------- | ------- |
+| `"new clee us"` | `nucleus`   | **0.667**         | correct |
+| `"nucleus"`     | `nucleolus` | **0.875**         | wrong   |
 
-The wrong pair scores _higher_ than the right one. No threshold separates these
-classes — not on letters, and not on phonetic keys either. The classes genuinely
-overlap.
+The wrong pair scores _higher_ than the right one, so no threshold on letters
+separates them.
+
+Two honest caveats, because this table used to overstate its case. The grader's
+own composite metric — letters, content words and a phonetic key — does separate
+*this particular* pair: 1.000 against 0.889. And the classes still overlap
+elsewhere, which is the point that survives. On the shipped content the lowest
+legitimate speech distortion scores **0.800** and the highest wrong answer that
+must be rejected scores **0.857**. There is no threshold between them, and
+`LIMITATIONS.md` §1 is what that costs.
 
 So the grader does not ask "is this close enough?". It asks **"of every answer
 that appears anywhere in this study set, which one did the student say?"** — a
 nearest-neighbour attribution over a known, closed candidate set, deciding
-between the best _right_ answer and the best _wrong_ one. `nucleolus` stops
+between the best _right_ answer and the best _wrong_ one — though only on the
+nearest-neighbour rung: a verbatim or whole-phrase match returns before that
+comparison is reached. `nucleolus` stops
 being a near-miss and becomes its own candidate.
 
 Two things fall out of that:
 
-1. It works. 20/20 on the hard cases in `harness/test_grading.py`, including
-   distortions like `"the might o chondria"` and `"sell wall"`.
+1. It works on distortion. 28/28 on the hard cases in `harness/test_grading.py`
+   — `"the might o chondria"`, `"sell wall"`, `"no wait the median"`. Read that
+   number for what it is: that file grades against a deck that includes the
+   near-misses as cards. Replayed against the content this repo actually ships,
+   which does not, it does worse — see `LIMITATIONS.md` §1.
 2. Being wrong is no longer one bit. We know _which_ concept was reached for —
    which is what everything above and below is built on.
 
@@ -93,9 +105,12 @@ Two things fall out of that:
 The closed candidate set is what makes the diagnosis possible, and it is also
 the thing a badly built study set destroys. If a student answers _chloroplasts_
 and no card in the set has _chloroplasts_ as an answer, there is nothing to
-attribute it to: the grade comes back `ambiguous`, the coach says "I didn't
-catch that", and no confusion is ever found. The questions look fine. The
-feature is dead.
+attribute it to — and what happens then is worse than nothing happening. The
+answer does not come back `ambiguous`. It is attributed to the nearest card
+anyway and usually marked **correct**: of 27 plausible wrong answers, 24 were.
+The questions look fine, no confusion is ever recorded, and the class report is
+silently missing the very patterns it exists to find. `LIMITATIONS.md` §1 has
+the measurements and why the fix is content-side rather than a threshold.
 
 So `tools/build_study_set.py` does not generate twenty questions. It is asked to
 build the set **around the confusions** — which concepts students actually swap,
@@ -157,10 +172,20 @@ produces it, because marking records that an answer was wrong, not which other
 idea was reached for.
 
 It is aggregate by construction. `class_report` counts students per confusion
-and never carries an identity out of `history.py`: it can say _seven students_
-and cannot say which seven. For a product whose users are children, that is a
-design constraint rather than a feature. A confusion held by one student alone
-is counted but never reported as a pattern.
+and never carries an identity out of `history.py`.
+
+That is true of the code and **not true of the system**, and the difference
+matters enough to say here rather than in a footnote. A teacher who runs the
+report twice — default arguments, thirty-five minutes apart, one child
+practising in between — reads the identity off the deltas: twelve students to
+thirteen, that pair three to four. Identity re-enters through *when* the call is
+made. `LIMITATIONS.md` §3 has the reproduction and what closing it would take.
+
+What does hold: a confusion held by one student alone is counted but never
+reported as a pattern, and no student's name reaches the report. For a product
+whose users are children, that is a design constraint rather than a feature —
+which is exactly why the part that does not hold is written above it rather than
+underneath it.
 
 ## It reads how the answer arrived, not just whether it was right
 
@@ -178,7 +203,10 @@ signal is split, each half where it belongs:
 | **asked of Alexa+** | an optional `manner` argument on `submit_answer` — Alexa+ _did_ hear the student, so the tool description invites it to report what the student **did**: "long pause before answering", "asked to stop", "answered instantly" |
 
 `manner` carries **observable behaviour, never an emotion label** — and the
-server declines an emotion word even when one is handed over willingly. That is
+server acts on an allowlist of behavioural phrases, so an emotion word handed
+over willingly matches nothing and produces no signal. It is not detected and
+refused; it is simply inert. Fourteen emotion labels produced an adjustment
+identical to passing nothing at all. That is
 a deliberate line, for two reasons.
 
 It works better. "Paused for eight seconds, then asked to move on" is something
@@ -225,16 +253,32 @@ It does not need to. Alexa+ already supplies the conversation and the reasoning;
 what it cannot do is decide reliably whether a mangled utterance was the right
 answer. That judgement is deterministic, explainable, and free:
 
-|                                | measured                                |
-| ------------------------------ | --------------------------------------- |
-| grading, median                | **3.6 ms**                              |
-| grading, p99                   | **14.0 ms** — 3% of the platform budget |
-| MCP round trip, median / worst | **8.9 ms** / **114.9 ms**               |
-| model calls while answering    | **0**                                   |
+|                                | measured                                 |
+| ------------------------------ | ---------------------------------------- |
+| grading, median                | **9.2 ms**                               |
+| grading, p99                   | **22.3 ms** — 4% of the platform budget  |
+| MCP round trip, median / worst | **14 ms** / **143 ms**                   |
+| model calls while answering    | **0**                                    |
 
-Grading is measured over 10,400 calls against the full thirteen-card set; the
-round trip is what `harness/smoke_client.py` sees over Streamable HTTP, worst
-case being the first call into a cold server.
+Reproduce the grading figures with `harness/bench_grading.py`: 10,400 calls
+against the full thirteen-card set, each on an utterance the grader has not seen
+before. That last part is the whole methodology. The candidate phrasings are
+cached because they repeat on every call all day, which is the real workload;
+repeating the *student's* utterances too would warm a cache that is always cold
+in production and report a grader that never does any work. An earlier version
+of this table was measured that way and read about three times faster than the
+truth.
+
+The round trip is what `harness/smoke_client.py` sees over Streamable HTTP,
+worst case being the first call into a cold server.
+
+Both figures have risen, and both rises were bought deliberately. Grading scales
+with the size of the closed candidate set, and teaching the sets the vocabulary
+a classroom actually uses — both the synonyms that mean the right answer and the
+concepts that do not — grew The Cell from 42 candidate phrasings to 68. The
+round trip rose when session state started being written during the session
+rather than only at the end, so a child who puts the speaker down halfway keeps
+their evening. Neither is free and neither is close to the budget.
 
 ## On a screen, it shows the one thing voice cannot
 
@@ -316,9 +360,23 @@ tools/              build_study_set.py   worksheet or topic -> a study set, buil
                                          around the confusions, offline
                     verify_study_set.py  checks any set with the live grader
 harness/            the tests that decide whether any of this is true
+data/students/      one profile per real student (gitignored)
+data/scratch/       the same, for students whose id is marked synthetic - the
+                    harness and the demo. Never counted in a class report, and
+                    emptied when the server starts
 ```
 
 ## Limitations, stated plainly
+
+**[`LIMITATIONS.md`](LIMITATIONS.md) is the full account**, and it is worth
+reading before the code. It covers the three ways the grader can be wrong and
+which one invents a record; the absence of any authentication; how a teacher who
+runs the class report twice can identify one student; why the report describes a
+narrower population than "the class"; and what we checked and found sound. Four
+people stress-tested this build — a student, a teacher, a parent and a platform
+reviewer — and most of what is in that file, they found.
+
+The short version:
 
 - **English only.** Alexa+ is not available in the Netherlands and the simulator
   is `en-US`. The language-specific parts are isolated in `grading.ACTIVE`, but a

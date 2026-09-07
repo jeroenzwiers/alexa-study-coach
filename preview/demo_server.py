@@ -60,7 +60,9 @@ def learner_answer(
 
 async def run_demo() -> dict:
     events: list[dict] = []
-    student = f"demo_{uuid.uuid4().hex[:10]}"
+    # Marked synthetic (history.SYNTHETIC_MARKER): a rehearsal of the demo must
+    # not add a pupil to the class report the demo goes on to show.
+    student = f"__demo_{uuid.uuid4().hex[:10]}__"
     contrast_seen = False
     first_mistake_seen = False
     contrast_started = False

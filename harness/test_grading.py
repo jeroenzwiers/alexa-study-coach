@@ -52,6 +52,22 @@ CASES = [
     ("i dont know",             "nucleus",      False),
     ("",                        "nucleus",      False),
     ("ribosome",                "nucleus",      False),
+    # A leading "no" retracts the student's own false start, not the answer.
+    # This is how a hesitant speaker answers, and throwing the turn away also
+    # threw away the attribution the whole diagnosis depends on.
+    ("no wait the mitochondria", "mitochondria", True),
+    ("no, the nucleus",         "nucleus",      True),
+    ("nope um the cell wall",   "cell wall",    True),
+    # ...but a negation that denies the answer still denies it.
+    ("no its not the nucleus",  "nucleus",      False),
+    # Containing the answer is not saying it. The trailing word is not filler,
+    # it is the thing that names a different concept - and these used to come
+    # back `exact`, scored 1.0, and marked correct.
+    ("mitochondrion wall",      "mitochondria", False),
+    ("cell membrane protein",   "cell membrane", False),
+    # Filler may still run ahead of the answer, or trail it as an affirmation.
+    ("el promedio, um, the mitochondria", "mitochondria", True),
+    ("the cell wall yeah",      "cell wall",    True),
 ]
 
 def main() -> int:

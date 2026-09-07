@@ -58,6 +58,10 @@ _FILLER = {
     "in", "on", "at", "and", "that", "this", "these", "those", "i", "think",
     "um", "uh", "erm", "like", "maybe", "probably", "answer", "would", "be",
     "say", "well", "so", "just", "kind", "sort", "guess",
+    # Trailing affirmations. A spoken answer often closes on one ("making
+    # proteins, yeah"), and since the answer now has to be the last thing of
+    # substance said, a stray "yeah" would otherwise read as a qualifier.
+    "yeah", "yep", "yes", "right", "ok", "okay", "innit", "then", "please",
 }
 
 _NEGATIONS = {"not", "no", "never", "isnt", "arent", "dont", "doesnt", "cant"}
@@ -115,6 +119,17 @@ def _content_string(text: str) -> str:
     return " ".join(t for t in tokens(text) if t not in ACTIVE.filler)
 
 
+@lru_cache(maxsize=2048)
+def _candidate_content(text: str) -> str:
+    """`_content_string` for CANDIDATE text only, which repeats on every call.
+
+    Deliberately not used on the student's utterance. Caching that side floods
+    the table with strings seen exactly once and evicts the forty-odd candidate
+    phrasings that actually repeat - which made grading slower, not faster.
+    """
+    return _content_string(text)
+
+
 def phonetic_key(text: str) -> str:
     """Phonetic code of the content words, run together.
 
@@ -122,6 +137,32 @@ def phonetic_key(text: str) -> str:
     "might o chondria"), so we drop word boundaries before coding.
     """
     return ACTIVE.phonetic(_content_string(text).replace(" ", ""))
+
+
+_SELF_CORRECTION = {"no", "nope", "nah"}
+_HESITATION_AFTER_CORRECTION = {"wait", "um", "uh", "sorry", "hang", "on", "actually", "i", "mean"}
+
+
+def strip_self_correction(text: str) -> str:
+    """Drop a leading "no" that retracts nothing yet.
+
+    "No wait, the median" is a student correcting themselves, and it is the most
+    ordinary shape a hesitant speaker's answer takes. Treating that leading word
+    as a semantic negation threw the whole utterance away - including the clean,
+    correct answer that followed - and, because a discarded turn is
+    unattributable, no confusion could ever be diagnosed from one either.
+
+    Only a LEADING marker is stripped. "It's not the nucleus" keeps its
+    negation, because there the word denies the answer rather than the speaker's
+    own false start.
+    """
+    words = tokens(text)
+    if not words or words[0] not in _SELF_CORRECTION:
+        return text
+    rest = words[1:]
+    while rest and rest[0] in _HESITATION_AFTER_CORRECTION:
+        rest = rest[1:]
+    return " ".join(rest)
 
 
 def has_negation(text: str) -> bool:
@@ -153,6 +194,8 @@ def _prepare(text: str) -> _Prepared:
 
 
 def _similarity(said: _Prepared, target: _Prepared) -> float:
+    if said.raw == target.raw:
+        return 1.0          # nothing three string comparisons can add to this
     scores = [
         SequenceMatcher(None, said.raw, target.raw).ratio(),
         SequenceMatcher(None, said.content, target.content).ratio(),
@@ -192,9 +235,42 @@ class Grade:
     matched: Candidate | None
 
 
+def _asserted_last(said_content: str, candidate: Candidate) -> bool:
+    """Did the utterance END on this answer, once filler is out of the way?
+
+    Anything the student put AFTER the answer is not padding - it is part of the
+    name of a different thing. "Authentication" is the answer; "authentication
+    token" is not.
+    """
+    wanted = _candidate_content(candidate.text)
+    if not wanted:
+        return False
+    return said_content == wanted or said_content.endswith(" " + wanted)
+
+
+def _qualified_away(said_content: str, candidate: Candidate) -> bool:
+    """The answer is in there, but the student carried on past it.
+
+    The same test as `_asserted_last`, asked of the nearest-neighbour round: a
+    candidate the student named and then qualified must not be able to win as a
+    CORRECT answer, however closely the strings resemble each other. Without
+    this, "mitochondrion wall" merely drops out of the fast path and is marked
+    right anyway, on a 0.875 similarity to the word it contains.
+    """
+    wanted = _candidate_content(candidate.text)
+    if not wanted or wanted not in said_content:
+        return False
+    return not _asserted_last(said_content, candidate)
+
+
 def grade(response: str, candidates: list[Candidate]) -> Grade:
     """Attribute a spoken response to the nearest candidate answer."""
     if not (response or "").strip():
+        return Grade(False, "empty", 0.0, 0.0, None)
+
+    # A leading "no" retracts the student's own false start, not the answer.
+    response = strip_self_correction(response)
+    if not response.strip():
         return Grade(False, "empty", 0.0, 0.0, None)
 
     # "It's not the nucleus" contains the keyword but asserts the opposite.
@@ -203,9 +279,22 @@ def grade(response: str, candidates: list[Candidate]) -> Grade:
 
     said_set = content_tokens(response)
     said_prepared = _prepare(response)
+    said_content = _content_string(response)
+
+    # A card the student named and then qualified is out as a CORRECT answer -
+    # and out entirely, not just the one phrasing they happened to use. Vetoing
+    # per phrasing leaves a sibling phrasing to win on similarity alone:
+    # "mitochondrion wall" stops matching "mitochondrion" and is then marked
+    # right against "mitochondria" instead.
+    qualified_cards = {
+        c.card_id for c in candidates
+        if c.correct and _qualified_away(said_content, c)
+    }
 
     def best_of(correct: bool) -> tuple[float, Candidate | None]:
         pool = [c for c in candidates if c.correct is correct]
+        if correct:
+            pool = [c for c in pool if c.card_id not in qualified_cards]
         if not pool:
             return 0.0, None
         return max(
@@ -216,17 +305,35 @@ def grade(response: str, candidates: list[Candidate]) -> Grade:
     # Fast path: the student said an answer verbatim, or wrapped it in filler
     # ("I think it's the mitochondria"). Prefer a correct candidate when several
     # match, so alternative phrasings of the right answer never lose to a wrong one.
+    # ...but where the answer sits in the utterance decides what the extra words
+    # were doing. Containment alone cannot tell "I think it's the mitochondria"
+    # from "mitochondrion wall", "a cache miss" or "authentication token", where
+    # the extra word is not padding but the thing that changes which concept was
+    # named - and those came back `exact`, scored 1.0, and were marked correct.
+    #
+    # Speech settles it: the assertion is what a sentence ENDS on. Filler and
+    # false starts run ahead of the answer ("um, I think it's the mitochondria",
+    # "el promedio, um, the average"); a qualifier that renames the concept
+    # trails after it. So the answer must be the last thing of substance said.
     said_norm = normalise(response)
     verbatim = [
         c for c in candidates
-        if normalise(c.text) and (said_norm == normalise(c.text) or normalise(c.text) in said_norm)
+        if normalise(c.text)
+        and (said_norm == normalise(c.text) or normalise(c.text) in said_norm)
+        and _asserted_last(said_content, c)
     ]
     if verbatim:
         winner = max(verbatim, key=lambda c: (c.correct, len(c.text)))
         return Grade(winner.correct, "exact", 1.0, 1.0, winner)
 
-    # All content words of an answer present is strong evidence on its own.
-    subsets = [c for c in candidates if content_tokens(c.text) and content_tokens(c.text) <= said_set]
+    # All content words of an answer present is strong evidence on its own -
+    # again only when the answer is what the student landed on.
+    subsets = [
+        c for c in candidates
+        if content_tokens(c.text)
+        and content_tokens(c.text) <= said_set
+        and _asserted_last(said_content, c)
+    ]
     if subsets:
         winner = max(subsets, key=lambda c: (c.correct, len(content_tokens(c.text))))
         return Grade(winner.correct, "token_subset", 1.0, 1.0, winner)

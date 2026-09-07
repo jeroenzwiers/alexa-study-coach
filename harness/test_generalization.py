@@ -76,7 +76,10 @@ def adversarial_checks(study_set, pair: tuple[str, str]) -> dict:
 
 async def exercise_domain(study_set_id: str, pair: tuple[str, str]) -> dict:
     study_set = store.STUDY_SETS[study_set_id]
-    student = f"generalization_{study_set_id}_{uuid.uuid4().hex[:8]}"
+    # The leading marker keeps this run out of the real profiles and out of
+    # every class report - see history.SYNTHETIC_MARKER. Persistence itself is
+    # untouched, which is what the two memory checks below rely on.
+    student = f"__generalization_{study_set_id}_{uuid.uuid4().hex[:8]}__"
     wrong_submitted: set[str] = set()
     events: list[dict] = []
 
@@ -126,22 +129,31 @@ async def exercise_domain(study_set_id: str, pair: tuple[str, str]) -> dict:
             )
             restart_turn = dict(restarted.structured_content or {})
 
-    wrong_a = next(event for event in events if event["asked"] == pair[0] and event["answer"] == study_set.card(pair[1]).accepted[0])
-    wrong_b = next(event for event in events if event["asked"] == pair[1] and event["answer"] == study_set.card(pair[0]).accepted[0])
-    contrast = next(event for event in events if event["turn"].get("contrast"))
+    # Every lookup below may legitimately find nothing when the run went wrong,
+    # and a bare next() would then raise StopIteration - which inside a
+    # coroutine surfaces as an unreadable RuntimeError naming no check at all.
+    # A missing event is a failed check, reported by name like any other.
+    def first(candidates, predicate) -> dict | None:
+        return next((event for event in candidates if predicate(event)), None)
+
+    wrong_a = first(events, lambda e: e["asked"] == pair[0] and e["answer"] == study_set.card(pair[1]).accepted[0])
+    wrong_b = first(events, lambda e: e["asked"] == pair[1] and e["answer"] == study_set.card(pair[0]).accepted[0])
+    contrast = first(events, lambda e: e["turn"].get("contrast"))
     mastery = [event for event in events if event["turn"].get("resolved_confusion") or (
         event["turn"].get("verdict") == "correct" and event["asked"] in pair and event["turn"].get("contrast") is None
     )]
     mastery = [event for event in mastery if event["asked"] in pair]
-    first_mastery = next(event for event in mastery if not event["turn"].get("resolved_confusion"))
-    resolved = next(event for event in events if event["turn"].get("resolved_confusion"))
+    first_mastery = first(mastery, lambda e: not e["turn"].get("resolved_confusion"))
+    resolved = first(events, lambda e: e["turn"].get("resolved_confusion"))
+    asked_ids = {event["asked"] for event in events}
 
     checks = {
-        "first wrong attribution": wrong_a["turn"].get("heard_as") == study_set.card(pair[1]).canonical.rstrip("."),
-        "mirrored wrong attribution": wrong_b["turn"].get("heard_as") == study_set.card(pair[0]).canonical.rstrip("."),
-        "confusion and contrast": contrast["turn"].get("contrast") is not None,
-        "first side not resolved": first_mastery["turn"].get("resolved_confusion") is None,
-        "second side resolved": bool(resolved["turn"].get("resolved_confusion")),
+        "both sides of the pair asked": set(pair) <= asked_ids,
+        "first wrong attribution": wrong_a is not None and wrong_a["turn"].get("heard_as") == study_set.card(pair[1]).canonical.rstrip("."),
+        "mirrored wrong attribution": wrong_b is not None and wrong_b["turn"].get("heard_as") == study_set.card(pair[0]).canonical.rstrip("."),
+        "confusion and contrast": contrast is not None and contrast["turn"].get("contrast") is not None,
+        "first side not resolved": first_mastery is not None and first_mastery["turn"].get("resolved_confusion") is None,
+        "second side resolved": resolved is not None and bool(resolved["turn"].get("resolved_confusion")),
         "persisted settled result": "settled for good" in progress_text.lower(),
         "restart has context": "welcome back" in restart_turn.get("speech", "").lower(),
     }

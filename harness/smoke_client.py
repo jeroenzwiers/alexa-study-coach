@@ -18,6 +18,9 @@ from mcp.client.streamable_http import streamable_http_client
 
 URL = "http://127.0.0.1:8421/mcp"
 BUDGET_MS = 500
+# Marked synthetic (history.SYNTHETIC_MARKER), so this run persists like any
+# student - which is the point, the progress line below reads it back - but in
+# the scratch directory, and never as a pupil in a class report.
 STUDENT = "__smoke__"
 
 
@@ -76,9 +79,15 @@ async def main() -> None:
                 timings.append((time.perf_counter() - start) * 1000)
                 return result
 
+            # The whole deck, not a sample of it. This run has to reach the
+            # contrast and the resolution to prove anything, and a shorter
+            # session leaves that to the shuffle: the two swapped organelles
+            # simply may not come up, and the smoke test then fails for no
+            # reason but bad luck. The client cannot seed the server's shuffle,
+            # so it asks for every card instead.
             result = await call(
                 "start_practice",
-                {"study_set_id": "biology_cells", "length": 8, "student": STUDENT},
+                {"study_set_id": "biology_cells", "length": 13, "student": STUDENT},
             )
             payload = result.structured_content or {}
             session_id = payload.get("session_id")
