@@ -368,7 +368,13 @@ data/scratch/       the same, for students whose id is marked synthetic - the
 
 ## Limitations, stated plainly
 
-**[`LIMITATIONS.md`](LIMITATIONS.md) is the full account**, and it is worth
+**[`LIMITATIONS.md`](LIMITATIONS.md) is the full account**, and
+**[`ADVERSARIAL_REVIEW.md`](ADVERSARIAL_REVIEW.md)** is how most of it was
+found: four simulated stakeholders driving the running server, who between them
+surfaced seven defects a green test suite was hiding — because every test in
+this repository modelled a student who eventually learns, and this product is
+for the one who does not. That review is engineering evidence and explicitly not
+evidence that anyone learns better. Both are worth
 reading before the code. It covers the three ways the grader can be wrong and
 which one invents a record; the absence of any authentication; how a teacher who
 runs the class report twice can identify one student; why the report describes a
