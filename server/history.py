@@ -24,6 +24,12 @@ import pathlib
 import re
 from dataclasses import dataclass
 
+# The same threshold the session uses to decide a wrong turn is a misconception
+# rather than a slip. It is imported rather than restated because the two must
+# not drift: what gets called a confusion out loud has to be what the session
+# means by one. (`store` does not import this module, so this cannot cycle.)
+from store import CONFUSION_THRESHOLD
+
 DATA_DIR = pathlib.Path(__file__).resolve().parents[1] / "data" / "students"
 
 # A student id carrying this marker is synthetic: a harness run, the
@@ -259,10 +265,20 @@ def opening(profile: dict, study_set) -> tuple[str | None, tuple[str, str] | Non
         said = study_set.card(entry.get("said", ""))
         if asked is not None and said is not None:
             pair = (asked.id, said.id)
+            # "Kept swapping places" describes a habit, and one miss is not a
+            # habit. The record is right either way - what was wrong was
+            # narrating a single slip as if it had happened for weeks, to a
+            # student who would know better and to a parent who would not.
+            habitual = int(entry.get("count", 0)) >= CONFUSION_THRESHOLD
+            what = (
+                "kept swapping places"
+                if habitual
+                else "got mixed up"
+            )
             return (
                 f"Welcome back. {when.capitalize()} "
                 f"{said.canonical.rstrip('.').lower()} and "
-                f"{asked.canonical.rstrip('.').lower()} kept swapping places. "
+                f"{asked.canonical.rstrip('.').lower()} {what}. "
                 f"Shall we settle that first?",
                 pair,
             )
@@ -307,17 +323,32 @@ def summary(profile: dict, study_set) -> str:
             line += " Settled for good: " + _join(names) + "."
 
     if unsettled:
-        names = []
+        # "Still open" means a pattern that has held up. A single miss is kept -
+        # it is what lets the next session open by naming the thing before the
+        # student has said a word - but it is reported as what it was. Calling
+        # one slip a standing confusion is how a parent came to be told their
+        # child had a deficiency in a session they got 12 out of 13 on.
+        names, slips = [], []
         for entry in unsettled.values():
             asked = study_set.card(entry.get("asked", ""))
             said = study_set.card(entry.get("said", ""))
-            if asked is not None and said is not None:
-                names.append(
-                    f"{asked.canonical.rstrip('.').lower()} against "
-                    f"{said.canonical.rstrip('.').lower()}"
-                )
+            if asked is None or said is None:
+                continue
+            phrase = (
+                f"{asked.canonical.rstrip('.').lower()} against "
+                f"{said.canonical.rstrip('.').lower()}"
+            )
+            if int(entry.get("count", 0)) >= CONFUSION_THRESHOLD:
+                names.append(phrase)
+            else:
+                slips.append(phrase)
         if names:
             line += " Still open: " + _join(names) + "."
+        if slips:
+            line += (
+                f" Mixed up once: {_join(slips)}"
+                f"{' as well' if names else ''}."
+            )
     elif settled:
         line += " Nothing open at the moment."
 

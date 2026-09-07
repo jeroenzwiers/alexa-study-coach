@@ -138,6 +138,68 @@ def abandonment_checks() -> dict:
     }
 
 
+def count_one_wording_checks() -> dict:
+    """One miss is reported as one miss, everywhere it is spoken about.
+
+    The record was never the problem - keeping a single slip is what lets the
+    next session open by naming the thing before the student has said a word.
+    The problem was that one record was narrated by thresholds that disagreed:
+    `remember` wrote at any count, the opening called it habitual at any count,
+    `student_progress` called it still open, and `tutor_report` would not call
+    it anything below two. So a child who got 12 out of 13 was described to
+    their parent as having a standing deficiency.
+    """
+    study_set = store.STUDY_SETS["biology_cells"]
+    pair = ("c1", "c6")
+
+    def play(student: str, misses: int) -> str:
+        random.seed(4)
+        turn = app.start_practice("biology_cells", length=13, student=student)
+        session_id, done = turn.session_id, 0
+        while not turn.finished and turn.question:
+            card = next(c for c in study_set.cards if c.question == turn.question)
+            wrong = card.id in pair and done < misses
+            if wrong:
+                done += 1
+            other = pair[1] if card.id == pair[0] else pair[0]
+            said = study_set.card(other).accepted[0] if wrong else card.accepted[0]
+            turn = app.submit_answer(turn.session_id, said)
+        return session_id
+
+    one_report = app.tutor_report(play("__count_one__", 1))
+    one_progress = app.student_progress("__count_one__", "biology_cells").lower()
+    one_greeting = (history.opening(history.load("__count_one__"), study_set)[0] or "").lower()
+
+    # A pattern that is still open, written directly: playing it out would
+    # settle it, and a settled pair is not what this half is about.
+    pattern = history.load("__count_two__")
+    record = history.record_for(pattern, "biology_cells")
+    record["sessions"] = 2
+    record["last_seen"] = datetime.date.today().isoformat()
+    record["open_confusions"]["c1|c6"] = {
+        "count": 3, "asked": "c1", "said": "c6",
+        "last_seen": datetime.date.today().isoformat(),
+    }
+    history.save(pattern)
+    two_greeting = (history.opening(pattern, study_set)[0] or "").lower()
+    two_progress = app.student_progress("__count_two__", "biology_cells").lower()
+
+    return {
+        "een misser heet geen gewoonte in de begroeting":
+            "kept swapping places" not in one_greeting and "mixed up" in one_greeting,
+        "een misser staat niet als open verwarring":
+            "still open" not in one_progress and "mixed up once" in one_progress,
+        "een misser wordt wel benoemd in het rapport":
+            "only once" in one_report and "chloroplasts" in one_report,
+        "een misser heet geen verwarring in het rapport":
+            "the same confusion" not in one_report,
+        "een patroon heet wel een gewoonte":
+            "kept swapping places" in two_greeting,
+        "een patroon staat wel als open verwarring":
+            "still open" in two_progress,
+    }
+
+
 def main() -> int:
     random.seed(11)
 
@@ -176,6 +238,7 @@ def main() -> int:
             "settled for good" in app.student_progress(STUDENT, "biology_cells").lower(),
     }
     checks.update(abandonment_checks())
+    checks.update(count_one_wording_checks())
     for label, ok in checks.items():
         print(f"  {'OK  ' if ok else 'FOUT'} {label}")
     return 0 if all(checks.values()) else 1

@@ -627,7 +627,28 @@ def tutor_report(session_id: str) -> str:
         dominant = (pair, fresh) if fresh else None
 
     if dominant is None:
-        if session.missed and not session.resolved:
+        # No pattern - but a single attributed miss is not nothing, and the
+        # report already knows which concept was reached for. Saying so is the
+        # difference between "the misses were spread out" and a sentence a
+        # parent can act on, and it costs no claim: one is reported as one.
+        single = [
+            key for key in session.confusions
+            if session.fresh_confusion_count(key) == 1 and key not in session.resolved
+        ]
+        named = None
+        if len(single) == 1:
+            asked_card, said_card = session.named_pair(single[0])
+            asked, said = study_set.card(asked_card), study_set.card(said_card)
+            if asked is not None and said is not None:
+                named = (
+                    f"One miss stands out, though it happened only once: asked "
+                    f"about {asked.canonical.rstrip('.').lower()}, the answer "
+                    f"given was {said.canonical.rstrip('.').lower()}."
+                )
+
+        if named:
+            parts.append(named)
+        elif session.missed and not session.resolved:
             parts.append(
                 f"The misses were spread out: {_topics(study_set, session.missed)}. No single pattern."
             )
