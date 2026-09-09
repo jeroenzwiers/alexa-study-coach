@@ -270,7 +270,13 @@ of this table was measured that way and read about three times faster than the
 truth.
 
 The round trip is what `harness/smoke_client.py` sees over Streamable HTTP,
-worst case being the first call into a cold server.
+worst case being the first call into a cold server. It was re-measured over
+three runs after bearer validation went in front of every request and did not
+move out of its own run-to-run spread (medians 12.7 / 15.1 / 19.8 ms), which is
+what verifying an HMAC signature should cost. A deployment validating RS256
+against a remote key set will pay more on the first request of a key's life and
+nothing after it, and that figure is not measured here because there is no
+authorization server to measure against yet.
 
 Both figures have risen, and both rises were bought deliberately. Grading scales
 with the size of the closed candidate set, and teaching the sets the vocabulary
@@ -328,7 +334,16 @@ Then, in another shell:
 .venv/Scripts/python harness/test_adaptive.py      # does it read the student?
 .venv/Scripts/python harness/test_topic_map.py     # a synthetic class of nine
 .venv/Scripts/python harness/test_content.py       # is the study set itself sound?
+.venv/Scripts/python harness/test_auth.py          # does it refuse the wrong token?
 ```
+
+The server requires a bearer token on `/mcp` and refuses without one. On a
+laptop it runs in development mode: tokens are signed with a secret that is a
+literal in `server/auth.py`, the server says so on every start, and the harness
+mints its own, so every scripted run goes through the same check Alexa+ will.
+Point it at a real authorization server with `MCP_AUTH_ISSUER` and
+`MCP_AUTH_JWKS_URL`; set `MCP_RESOURCE_URI` to the server's public URL, because
+that is the audience a token has to name.
 
 For a judge-facing Alexa+-style proof backed by the real MCP server, start the
 server and the presentation shell in two shells:
@@ -353,7 +368,9 @@ server/adaptive.py  reading how an answer arrived: strain, ease, and what to do
 server/history.py   what survives a session - which confusions are open, which
                     are settled, where the student's level sits, and the same
                     confusions summed across every student who studied a set
-server/app.py       the MCP server: tools, OAuth metadata, health
+server/app.py       the MCP server: tools, discovery documents, health
+server/auth.py      the OAuth 2.1 resource server: bearer validation, audience
+                    and scope checks, Origin validation
 server/ui.py        the MCP Apps card rendered on devices with a display
 content/            study sets as plain JSON - the shape a worksheet becomes
 tools/              build_study_set.py   worksheet or topic -> a study set, built
@@ -376,7 +393,8 @@ this repository modelled a student who eventually learns, and this product is
 for the one who does not. That review is engineering evidence and explicitly not
 evidence that anyone learns better. Both are worth
 reading before the code. It covers the three ways the grader can be wrong and
-which one invents a record; the absence of any authentication; how a teacher who
+which one invents a record; what authentication does and does not cover; how a
+teacher who
 runs the class report twice can identify one student; why the report describes a
 narrower population than "the class"; and what we checked and found sound. Four
 people stress-tested this build — a student, a teacher, a parent and a platform

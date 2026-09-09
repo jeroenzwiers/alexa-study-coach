@@ -2,3 +2,4 @@ mcp==2.1.1
 jellyfish>=1.1
 pydantic>=2
 uvicorn>=0.30
+PyJWT[crypto]>=2.8

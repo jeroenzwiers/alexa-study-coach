@@ -9,12 +9,14 @@ import uuid
 
 import anyio
 from mcp.client.session import ClientSession
-from mcp.client.streamable_http import streamable_http_client
 from starlette.applications import Starlette
 from starlette.responses import HTMLResponse, JSONResponse
 from starlette.routing import Route
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "server"))
+import auth  # noqa: E402  - needs ROOT on the path first
+
 MCP_URL = os.environ.get("MCP_URL", "http://127.0.0.1:8421/mcp")
 
 ANSWERS = {
@@ -67,7 +69,7 @@ async def run_demo() -> dict:
     first_mistake_seen = False
     contrast_started = False
 
-    async with streamable_http_client(MCP_URL) as (read, write):
+    async with auth.connect(MCP_URL) as (read, write):
         async with ClientSession(read, write) as client:
             initialized = await client.initialize()
             tool_list = await client.list_tools()

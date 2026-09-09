@@ -9,12 +9,16 @@ Drives a student who has two concepts the wrong way round, is drilled on the
 contrast, and settles it. The `manner` argument is passed on some turns exactly
 as Alexa+ would pass it, and left off on others, because it has to be optional.
 """
+import pathlib
 import statistics
+import sys
 import time
 
 import anyio
 from mcp.client.session import ClientSession
-from mcp.client.streamable_http import streamable_http_client
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "server"))
+import auth
 
 URL = "http://127.0.0.1:8421/mcp"
 BUDGET_MS = 500
@@ -63,7 +67,7 @@ async def main() -> None:
     saw_contrast = False
     saw_resolution = False
 
-    async with streamable_http_client(URL) as (read, write):
+    async with auth.connect(URL) as (read, write):
         async with ClientSession(read, write) as session:
             init = await session.initialize()
             print(f"server           : {init.server_info.name} {init.server_info.version}")

@@ -38,9 +38,10 @@ from mcp.server.apps import Apps, ResourceCsp
 from mcp.server.mcpserver import MCPServer
 from pydantic import BaseModel, Field
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse, Response
 
 import adaptive
+import auth
 import history as profiles
 import store
 import ui
@@ -812,21 +813,37 @@ def _topics_from(names: list[str]) -> str:
     return ", ".join(names[:-1]) + f", and {names[-1]}"
 
 
-# --- Authentication: there is none, and this server no longer says otherwise --
+# --- Authentication ---------------------------------------------------------
 #
-# There used to be an OAuth metadata document at
-# /.well-known/oauth-authorization-server here, advertising an authorization
-# endpoint and a token endpoint. Neither existed - both returned 404 - and the
-# comment beside it described an AUTH_REQUIRED flag that appears nowhere in the
-# codebase. Everywhere else this repo overstates something it does so to a
-# reader; that document made the false claim in machine-readable form, to the
-# toolkit itself.
-#
-# Building real auth is not a thing that fits before the deadline. Removing the
-# claim is. This server is unauthenticated: anyone who can reach the port can
-# call any tool, and `student_progress` will return a named student's open
-# confusions to them. That is stated in LIMITATIONS.md and it is why the
-# deployment story is one device in one home, not a school.
+# The resource-server half lives in `auth`. What is wired here is the two
+# discovery documents and the middleware, and the reason they are separate is
+# that only one of them is ours to make claims in: `/.well-known/
+# oauth-protected-resource` describes this server, and the authorization-server
+# document describes something else. Where there is no authorization server, the
+# second path 404s rather than describe one.
+
+
+@server.custom_route("/.well-known/oauth-protected-resource", methods=["GET"])
+async def oauth_protected_resource(request: Request) -> JSONResponse:
+    return JSONResponse(auth.protected_resource_metadata())
+
+
+@server.custom_route("/.well-known/oauth-authorization-server", methods=["GET"])
+async def oauth_authorization_server(request: Request) -> Response:
+    url = auth.authorization_server_metadata_url()
+    if url is None:
+        return JSONResponse(
+            {
+                "error": "not_found",
+                "error_description": (
+                    "This server has no authorization server configured, so "
+                    "there is no metadata document to serve. Set "
+                    "MCP_AUTH_ISSUER."
+                ),
+            },
+            status_code=404,
+        )
+    return RedirectResponse(url, status_code=307)
 
 
 @server.custom_route("/healthz", methods=["GET"])
@@ -834,7 +851,9 @@ async def healthz(request: Request) -> JSONResponse:
     return JSONResponse({"ok": True, "study_sets": list(store.STUDY_SETS)})
 
 
-app = server.streamable_http_app(streamable_http_path="/mcp", json_response=True)
+app = auth.AuthMiddleware(
+    server.streamable_http_app(streamable_http_path="/mcp", json_response=True)
+)
 
 if __name__ == "__main__":
     import uvicorn
@@ -843,4 +862,5 @@ if __name__ == "__main__":
     # marked id and in their own directory. Clearing it here keeps those runs
     # from piling up and keeps each one starting from a blank student.
     profiles.clear_scratch()
+    print(auth.startup_banner(), file=sys.stderr)
     uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("PORT", "8421")), log_level="warning")

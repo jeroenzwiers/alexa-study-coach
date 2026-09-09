@@ -68,10 +68,18 @@ attributes to the right card, and is structurally incapable of catching a
 phrasing that is **not** in it. Until it refuses a set that has not declared its
 near-misses and its taught synonyms, the next study set ships with the same hole.
 
-## 2. There is no authentication
+## 2. Authentication stops at the door, not at the tool
 
-Anyone who can reach the port can call any tool. `student_progress` will return
-a named student's open confusions:
+Every request to `/mcp` now needs a bearer token: `server/auth.py` validates the
+signature, the issuer, the expiry, and - the one a naive implementation skips -
+that the token was issued **for this server**. A token our own issuer signed for
+a different resource is refused, because the alternative is accepting any token
+that issuer ever minted. Origin is validated too, so a web page on another origin
+cannot drive a server bound to loopback. `harness/test_auth.py` holds 24 cases.
+
+What that check does **not** do is distinguish between the tools behind it. One
+scope, `mcp:tools`, opens all six. So a token issued to ask a student questions
+can also read `student_progress`:
 
 ```
 student_progress(student="p12", study_set_id="biology_cells")
@@ -82,16 +90,20 @@ student_progress(student="p12", study_set_id="biology_cells")
 That is a confusion `class_report` deliberately suppresses as a singleton,
 handed over in full by the tool beside it. It is also an existence oracle: a
 real id returns a history, an invented one returns "I have no practice history
-for that student yet", so ids can be enumerated.
+for that student yet", so ids can be enumerated by anyone holding any valid
+token.
 
-**The student id is being used as a credential and is not one.** It is a name
-someone typed. This build is a local server for one device in one home; do not
-put it on a network you share, and do not point it at a class.
+**The student id is still being used as a credential and is still not one.** It
+is a name someone typed. Authentication now says *some* authorised caller is
+asking; it says nothing about which student they may ask about.
 
-A previous version advertised OAuth metadata at
-`/.well-known/oauth-authorization-server` naming an authorization endpoint and a
-token endpoint. Neither existed. That document has been deleted rather than left
-to make a machine-readable false claim.
+**And the development mode is not a security boundary.** With no
+`MCP_AUTH_ISSUER` set, tokens are signed with a secret that is a literal in
+`server/auth.py`, so anyone who can read this repository can mint one. That is
+why the server prints a warning on every start in that mode, and why it serves
+no authorization-server metadata there: with no authorization server, there is
+nothing truthful to put in that document, and the previous version of this file
+recorded what happened the last time this repo published one anyway.
 
 ## 3. A teacher who runs the class report twice can identify one student
 

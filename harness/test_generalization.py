@@ -10,12 +10,12 @@ import uuid
 
 import anyio
 from mcp.client.session import ClientSession
-from mcp.client.streamable_http import streamable_http_client
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 sys.path.insert(0, str(ROOT / "tools"))
 
+import auth
 import store
 from grading import Candidate, grade
 from verify_study_set import verify
@@ -83,7 +83,7 @@ async def exercise_domain(study_set_id: str, pair: tuple[str, str]) -> dict:
     wrong_submitted: set[str] = set()
     events: list[dict] = []
 
-    async with streamable_http_client(MCP_URL) as (read, write):
+    async with auth.connect(MCP_URL) as (read, write):
         async with ClientSession(read, write) as client:
             await client.initialize()
             await client.list_tools()
@@ -112,7 +112,7 @@ async def exercise_domain(study_set_id: str, pair: tuple[str, str]) -> dict:
                 turn = dict(result.structured_content or {})
                 events.append({"asked": current.id, "answer": answer, "turn": turn})
 
-    async with streamable_http_client(MCP_URL) as (read, write):
+    async with auth.connect(MCP_URL) as (read, write):
         async with ClientSession(read, write) as client:
             await client.initialize()
             progress_result = await client.call_tool(
