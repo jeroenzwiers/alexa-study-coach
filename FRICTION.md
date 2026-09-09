@@ -53,9 +53,30 @@ no local binary, no account configuration that would grant the CodeArtifact
 role. What we could not determine from the documentation is whether that is a
 missing step on our side or a closed gate — whether toolkit access is restricted
 to selected partners, how a developer checks their own eligibility, and where
-the permitted simulated path is documented. We used the hackathon's simulated
-Alexa+ path: `preview/demo_server.py` is a presentation shell only and drives
-the real local Streamable HTTP server.
+the permitted simulated path is documented. `preview/demo_server.py` is a
+presentation shell only and drives the real local Streamable HTTP server.
+
+**Re-checked on 9 September 2026, and the question above now has an answer.**
+The environment setup page says: "Log in to the AWS account that you provided to
+the Alexa Solutions Architect when you do these steps." So it is a gate, and the
+key is held by a person at Amazon. The page documents every step *after* that
+introduction has happened — creating the IAM user, attaching the assume-role
+policy, configuring the npm registry — and no step, form, waitlist or eligibility
+check for obtaining it. There is no self-serve path, and no way to find out
+whether you are eligible other than by knowing someone.
+
+This is worse than the original entry recorded. The first version of this item
+asked for the prerequisite to be stated above the first command. That still
+stands, but it is not sufficient: a prerequisite you cannot satisfy by reading is
+not a prerequisite, it is an allowlist, and the page should say so and say how to
+get on it.
+
+Worth separating from the complaint: **this gate does not block the submission**,
+which the rules settle. The Alexa+ track takes a working Agent Skill *or* a
+self-hosted MCP server on the spec, and the CLI deploys neither — it registers an
+add-on, which is a step past what is asked for. So this entry is feedback about
+an onboarding path, not a report of being locked out of the contest. An entrant
+who reads the setup page top to bottom, though, has no way of knowing that.
 
 Two things this entry does *not* claim, because an earlier draft did and both
 are falsifiable in five seconds. It is not a finding that no Alexa CLI exists —
