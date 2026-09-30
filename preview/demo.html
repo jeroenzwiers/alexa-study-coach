@@ -430,8 +430,8 @@
       // apart by ear even when the machine has only one installed voice - which
       // is the common case on Windows without Edge. Choosing two different
       // voices in the pickers works too, and sounds better.
-      const COACH = { pitch: 0.95, rate: 0.97 };
-      const STUDENT = { pitch: 1.45, rate: 1.03 };
+      const COACH = { pitch: 0.95, rate: 1.06 };
+      const STUDENT = { pitch: 1.45, rate: 1.1 };
 
       // Edge exposes online neural voices next to the dated local ones. On a
       // machine whose only installed voice is "Microsoft Zira Desktop", which
@@ -560,6 +560,7 @@
           if (event.kind === "protocol") {
             add(
               `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span></div></article>`,
+              "Connected to the real Study Coach server.",
             );
           } else if (event.kind === "start") {
             add(
@@ -584,18 +585,22 @@
           } else if (event.kind === "subject") {
             add(
               `<article class="event subject"><div class="label">${escapeHtml(event.state)}</div><h2>${escapeHtml(event.title)}</h2>${speech(event.text)}</article>`,
+              event.text,
             );
           } else if (event.kind === "class") {
             add(
               `<article class="event class"><div class="label">${escapeHtml(event.state)} · class_report</div>${speech(event.text)}<div class="detail"><span class="tag good">counts, never names</span><span class="tag">simulated cohort</span></div></article>`,
+              event.text,
             );
           } else if (event.kind === "persistence") {
             add(
               `<article class="event persistence"><div class="label">${escapeHtml(event.state)} · student_progress</div>${speech(event.text)}<div class="detail"><span class="tag good">history read from server</span></div></article>`,
+              event.text,
             );
           } else if (event.kind === "restart") {
             add(
               `<article class="event restart"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}<div class="detail"><span class="tag good">context restored</span></div></article>`,
+              event.turn.speech,
             );
           }
         }

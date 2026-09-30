@@ -145,11 +145,6 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
             "asked_question": asked,
             "answer": answer,
             "turn": turn,
-            # Shown, never spoken. This act's job is recognition, and for this
-            # audience the two words do that on sight. Speaking it as well costs
-            # 36 seconds of a 3-minute budget to say what the screen already
-            # said - and the budget is the binding constraint, not the idea.
-            "mute": True,
         })
         if CS_PERMISSION in lowered and turn.get("contrast"):
             return
