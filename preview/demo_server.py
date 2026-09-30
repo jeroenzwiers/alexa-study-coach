@@ -99,7 +99,7 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
     for _ in range(32):
         result = await client.call_tool(
             "start_practice",
-            {"study_set_id": "computer_science_fundamentals", "length": 12, "student": student},
+            {"study_set_id": "computer_science_fundamentals", "length": 2, "student": student},
         )
         candidate = payload(result)
         if CS_IDENTITY in candidate.get("question", "").lower():
@@ -155,6 +155,11 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
             return
 
 
+# A session of four. The arc needs six turns - the miss, the deferred mirror,
+# the contrast, and both sides of it - and the server grows the session to fit,
+# so asking for four delivers seven cards and stops on the resolution. Thirteen
+# delivered the same seven plus nine more with nothing left to say, which is
+# dead air on camera. Verified: the full arc in five runs out of five.
 async def run_demo() -> dict:
     events: list[dict] = []
     # Marked synthetic (history.SYNTHETIC_MARKER): a rehearsal of the demo must
@@ -180,7 +185,7 @@ async def run_demo() -> dict:
             for _ in range(32):
                 result = await client.call_tool(
                     "start_practice",
-                    {"study_set_id": "biology_cells", "length": 13, "student": student},
+                    {"study_set_id": "biology_cells", "length": 4, "student": student},
                 )
                 candidate = payload(result)
                 if "releases energy" in candidate.get("question", "").lower():

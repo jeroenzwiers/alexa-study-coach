@@ -1,60 +1,53 @@
 # Study Coach Golden Demo Script
 
-**Target runtime:** 2:31-2:45 depending on delivery. Hard limit 3:00 - judges
-are not required to watch past it. A simulated Alexa+ experience backed by the real MCP server.
+**Target runtime:** 2:42-2:55 depending on delivery. Hard limit 3:00 - judges are
+not required to watch past it. A simulated Alexa+ experience backed by the real
+MCP server.
 
-The shape is **a promise and three payoffs**. The opening tells the viewer
-exactly what to watch for; the session then delivers it, and barely needs
-narrating over the top. That is deliberate. Two synthesised voices carry the
-session, and a narrator talking across them is what makes a demo hard to follow.
+The shape is **a promise and three payoffs**. The opening tells the viewer what
+to watch for; the session then delivers it, and the two synthesised voices carry
+it. Your narration goes in the gaps, not across them.
 
-## The arithmetic, because it is tight
+## The arithmetic
 
-The synthesised voices speak 144 words across the biology act: about **58
-seconds**, and not something you control. The narration is 250 words, and how
-long that takes is entirely down to you.
+| your delivery | narration, 260 words | + session, 68 s | total |
+| --- | --- | --- | --- |
+| 140 wpm, unhurried | 111 s | | **2:59** - no margin |
+| 150 wpm, normal | 104 s | | **2:52** |
+| 160 wpm, brisk | 98 s | | **2:45** |
 
-| your delivery | narration | total |
-| --- | --- | --- |
-| 140 wpm, unhurried | 107 s | **2:44** |
-| 150 wpm, normal | 100 s | **2:37** |
-| 160 wpm, brisk | 94 s | **2:31** |
+**Aim for 150 and do not drop below it.** At 140 the close lands on 2:59, and
+the close is the punchline - judges are not required to watch past three
+minutes. Time yourself on the 81-word opening block before recording anything:
+33 seconds is on pace, 35 is the edge.
 
-All three fit inside the three minutes, which was not true of two earlier
-drafts - one ran 4:03 - so the margin is deliberate rather than lucky. Time
-yourself on the 81-word opening block anyway: if it takes much over 35 seconds
-you are slower than the table assumes and the close gets tight.
+Two cuts if you run long, in the order I would make them:
 
-Two levers if you do run long, in the order I would use them:
+1. The persistence line at 1:55 (17 words). The cards say it on screen.
+2. The second class-report line at 2:25 (14 words). It is the best sentence in
+   the script, so cut it last.
 
-1. Cut the persistence line at 1:50 (17 words). The card says it on screen.
-2. Cut the second class-report line at 2:20 (14 words). It is the best sentence
-   in the script, so cut it last.
+**The biology session is four questions long, and every card in it is spoken** -
+the mistakes and the ordinary correct answers alike. The server grows a session
+when it finds something, so asking for four gives seven cards and the last one
+is the resolution. Asking for thirteen, as an earlier cut did, gave the same
+seven and then nine more with nothing left to say.
 
-**What is spoken and what is not.** The biology act speaks: the student's answer
-in one voice, the coach's reply in the other. The ordinary correct answers, the
-two persistence cards, the whole computer science act and the class report are
-shown but silent - the narrator carries those, and the viewer reads them.
-Speaking the computer science act as well cost 36 seconds to say what the screen
-already said.
-
-One thing the shell does that is worth knowing, because it sounds like a
-mistake and is not: each coach line ends by asking the *next* question, so when
-a run of silent cards breaks the chain, the next spoken card asks its own
-question again before the answer. That is why you hear "Which organelle captures
-light energy in a plant cell?" twice - once trailing an earlier card, once
-opening this one. Without it you hear question two asked and question four
-answered.
+Shown but **not** spoken: the two persistence cards, the computer science act,
+and the class report. You are talking over all three, so none of them is
+silence. Speaking the computer science act as well costs 36 seconds to say what
+the screen already says - if you would rather hear it, the trade is cutting the
+narration to about 150 words.
 
 ## Before you record
 
-- **Step mode on.** The timeline otherwise advances itself 450 ms after each
-  card, which leaves no gap to speak into. With it on, the session waits for you
-  to press the space bar. Your narration sets the pace, not a timer.
+- **Step mode on.** The timeline otherwise advances itself, which leaves no gap
+  to speak into. With it on, the session waits for the space bar. It does not
+  stop on the two ordinary answers - those speak and move on by themselves.
 - **Full screen**, `F11`. A Chrome update notice in the corner is a stray line
   of Dutch in an English-only submission.
-- **Zoom to about 150%**, `Ctrl` and `+`. The small monospace labels -
-  `CONFUSION_RESOLVED`, `SIDE_A_MASTERED` - are what YouTube's compression eats.
+- **Zoom to about 150%**, `Ctrl` and `+`. The small monospace labels are what
+  YouTube's compression eats.
 - **Drop your recording level a few decibels.** The first take peaked at
   -0.1 dB, hard against the ceiling.
 
@@ -63,15 +56,14 @@ answered.
 Hold on the opening screen. Do not click.
 
 The intro is on the screen as well as in your mouth, so a judge watching with
-the sound off still gets the premise. Under the headline sits a panel: one
-sentence on what Study Coach is, then the three things to watch for, numbered.
-You are reading those three items off the screen, not reciting them.
+the sound off still gets the premise. Under the headline: one sentence on what
+Study Coach is, then the three things to watch for, numbered. Read them off the
+screen rather than reciting them.
 
-The moment you click, that panel shrinks to a thin strip and sticks to the top
-of the window, and each of the three ticks itself off in teal as the session
-delivers it - `attributed` at 0:45, `chosen` at 1:05, `closed` at 1:25. The
-promise stays in shot the whole way. Nothing lights up early: each tick is
-driven by the proof state on the card the server actually sent.
+The moment you click, that panel shrinks to a strip and sticks to the top of the
+window, and each item ticks itself off in teal as the session delivers it.
+Nothing lights up early - each tick is driven by the proof state on the card the
+server actually sent.
 
 > "Here's a report card. Seven out of ten."
 >
@@ -102,17 +94,34 @@ Over the `MCP CONNECTION` card.
 
 ## 0:45-1:05 - Payoff one: attributed
 
-Let both voices finish, then speak.
+Question 1, the wrong answer, the coach's reply. Let all three voices finish.
 
 > "There. Not a cross - *attributed to the chloroplasts*. Attribution over a
 > closed set of answers, not a similarity score."
 
-## 1:05-1:25 - Payoff two: chosen, not shuffled
+## 1:05-1:20 - Two right, in passing
+
+Questions 3 and 4 go by spoken, correct, and set back on the page. Step mode
+does not stop on them. One line over the pair:
+
+> "And the rest of it, right. This isn't a weak topic - it's one pair."
+
+That is the difference between a score and a diagnosis. Eleven out of thirteen
+tells a parent their child is middling at biology. This says they know the cell
+and hold one distinction backwards.
+
+## 1:20-1:35 - Payoff two: chosen, not shuffled
+
+The mirrored question arrives, the second miss lands, and the contrast probe
+comes back naming both concepts.
 
 > "Two misses. One misconception, both sides. And that question was chosen, not
 > shuffled."
 
-## 1:25-1:50 - Payoff three: closed
+Watch the counter on the card: **question 5 of 6**, where a moment ago the total
+was 4. The session got longer because it found something.
+
+## 1:35-1:55 - Payoff three: closed
 
 On `SIDE_B_MASTERED`, before any resolution tag appears:
 
@@ -125,35 +134,20 @@ On `SIDE_A_MASTERED · CONFUSION_RESOLVED`:
 
 The server settles the chloroplasts side first, so `SIDE_B_MASTERED` appears
 before `SIDE_A_MASTERED`. Read the labels off the screen; the order is
-deterministic but it is not alphabetical.
+deterministic but it is not alphabetical. This is the last card of the session -
+it ends on the resolution rather than trailing off.
 
-Then seven pale cards slide past on their own - the rest of the session, every
-one correct, each tagged `correct`. Step mode does not stop on them. Four words
-over that run, and do not hurry them:
+## 1:55-2:05 - What survives the session
 
-> "And everything else - right."
-
-That run is the argument nobody makes out loud. This student is not weak at
-biology. They know the cell. They had one pair the wrong way round, and it is
-now sorted. A score of eleven out of thirteen hides exactly that, which is the
-whole reason this project exists.
-
-**If you find you have room**, there is one more thing on those cards worth
-saying, and it is not in the word count above. Every card carries
-`question N of M`, and at the contrast probe the M changes: **13 becomes 15**.
-The session got two questions longer because it found something. Nothing else
-in the demo shows the product making a decision quite that plainly.
-
-## 1:50-2:00 - What survives the session
+Two gold cards, silent. You carry them.
 
 > "Sessions end. Misconceptions don't. What's kept is the diagnosis, so the
 > unfinished business goes first next time."
 
-## 2:00-2:20 - None of that was about biology
+## 2:05-2:25 - None of that was about biology
 
-A black `SECOND SUBJECT` card, then Computer Science Fundamentals. This act is
-**silent** - shown, not spoken. For this audience the two words do the work on
-sight, and your voice is the only thing on the soundtrack here.
+A black `SECOND SUBJECT` card, then Computer Science Fundamentals. Silent -
+shown, not spoken.
 
 > "None of that was a biology feature. Same server, another subject - and I
 > suspect this pair is familiar."
@@ -163,14 +157,15 @@ they claim to be?", and the card comes back tagged `attributed to
 Authorization`. Then the mirror, and `CONFUSION_DETECTED · CONTRAST_PROBE` with
 `contrast: authorization vs authentication`.
 
-Step mode stops on both. Give them a beat each and say nothing over them.
+Step mode stops on both. Give them a beat and say nothing over them - for this
+audience the two words do the work on sight.
 
-## 2:20-2:45 - Across a class, it stops being about one student
+## 2:25-2:45 - Across a class, it stops being about one student
 
-The final card, `CLASS_REPORT · SIMULATED COHORT`, carrying two tags:
-`counts, never names` and `simulated cohort`. It is not spoken aloud; you read
-it. Say **simulated** - these are seeded profiles, not real pupils, and the rest
-of this project is careful about exactly that distinction.
+The final card, `CLASS_REPORT · SIMULATED COHORT`, tagged `counts, never names`
+and `simulated cohort`. Silent; you read it. Say **simulated** - these are
+seeded profiles, not real pupils, and the rest of this project is careful about
+exactly that distinction.
 
 The card says, verbatim:
 
@@ -185,13 +180,11 @@ The card says, verbatim:
 > "And not just *that* they confuse them. **Which half of the distinction is
 > missing.**"
 
-Worth knowing, though it is too subtle to narrate: one of those nine confuses
-the nucleus with the nucleolus, alone. It is counted and deliberately not
-reported, because one student is not a pattern. The privacy floor is visible in
-the demo by what it leaves out.
+Worth knowing, though too subtle to narrate: one of those nine confuses the
+nucleus with the nucleolus, alone. It is counted and deliberately not reported,
+because one student is not a pattern. The privacy floor is visible by what it
+leaves out.
 
-## 2:45-2:56 - Close
+## 2:45-2:55 - Close
 
 > "A wrong answer isn't a score. It's evidence about what the student believes."
-
----

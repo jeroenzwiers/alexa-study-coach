@@ -496,12 +496,17 @@
 
       let cards = [];
       const promise = document.querySelector("#promise");
-      function add(html, spoken, answer, quiet, state, question) {
+      function add(html, spoken, answer, quiet, state, question, mute) {
         cards.push({
           html,
           spoken: spoken || "",
           answer: answer || "",
+          // `quiet` is about the eye and the space bar: set back, not stepped
+          // on. `mute` is about the ear. An ordinary correct answer is quiet
+          // but not mute - it is spoken, because a session where only the
+          // mistakes are audible is not a session.
           quiet: Boolean(quiet),
+          mute: Boolean(mute),
           state: state || "",
           question: question || "",
         });
@@ -537,7 +542,7 @@
             // stepped on: it keeps the question numbering honest and slides
             // past, rather than competing with the cards that carry the story.
             const quiet = event.state === "ANSWER_RECEIVED";
-            const mute = quiet || Boolean(event.mute);
+            const mute = Boolean(event.mute);
             add(
               `<article class="event answer${quiet ? " quiet" : ""}"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
               mute ? "" : event.turn.speech,
@@ -545,6 +550,7 @@
               quiet,
               event.state,
               mute ? "" : event.asked_question,
+              mute,
             );
           } else if (event.kind === "subject") {
             add(
@@ -596,7 +602,7 @@
           const node = timeline.lastElementChild;
           keepPromise(card.state);
           node.scrollIntoView({ behavior: "smooth", block: "center" });
-          if (speaking() && !card.quiet) {
+          if (speaking() && !card.mute) {
             node.classList.add("speaking");
             // Each coach line ends by asking the NEXT question, so silencing a
             // card orphans the question the card before it just asked - you
