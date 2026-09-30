@@ -11,14 +11,14 @@ session, and a narrator talking across them is what makes a demo hard to follow.
 ## The arithmetic, because it is tight
 
 The synthesised voices speak 194 words across seven cards: about **78 seconds**,
-and not something you control. The narration is 245 words, and how long that
+and not something you control. The narration is 250 words, and how long that
 takes is entirely down to you.
 
 | your delivery | narration | total |
 | --- | --- | --- |
-| 140 wpm, unhurried | 105 s | **3:03** - over the limit |
-| 150 wpm, normal | 98 s | **2:56** |
-| 160 wpm, brisk | 92 s | **2:49** |
+| 140 wpm, unhurried | 107 s | **3:05** - over the limit |
+| 150 wpm, normal | 100 s | **2:58** |
+| 160 wpm, brisk | 94 s | **2:51** |
 
 So **time yourself reading the opening block before you record anything.** It is
 81 words; if it takes you longer than 33 seconds, the close will fall outside
@@ -105,6 +105,16 @@ On `SIDE_A_MASTERED · CONFUSION_RESOLVED`:
 The server settles the chloroplasts side first, so `SIDE_B_MASTERED` appears
 before `SIDE_A_MASTERED`. Read the labels off the screen; the order is
 deterministic but it is not alphabetical.
+
+Then a dashed card: **7 questions answered correctly, not shown**. Four words
+over it, and do not hurry them:
+
+> "And everything else - right."
+
+That card is the argument nobody makes out loud. This student is not weak at
+biology. They know the cell. They had one pair the wrong way round, and it is
+now sorted. A score of eleven out of thirteen hides exactly that, which is the
+whole reason this project exists.
 
 ## 1:50-2:00 - What survives the session
 

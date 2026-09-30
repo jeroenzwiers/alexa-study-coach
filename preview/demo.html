@@ -201,6 +201,17 @@
           12px ui-monospace,
           monospace;
       }
+      /* Skipped cards leave a visible hole - the question numbers jump - and an
+         unexplained hole reads as something edited out. Saying how many were
+         skipped closes that, and says the quiet part too: the student got all
+         of them right, so the confusion is specific rather than general. */
+      .event.elided {
+        border: 1px dashed var(--line);
+        border-left: 5px solid var(--line);
+        background: none;
+        box-shadow: none;
+        padding: 9px 18px;
+      }
       .event.speaking {
         border-left-color: var(--ink);
         box-shadow: 0 2px 14px #17202b1f;
@@ -400,7 +411,25 @@
       }
       function collect(data) {
         cards = [];
+        let skipped = [];
+        const flushSkipped = () => {
+          if (!skipped.length) return;
+          const n = skipped.length;
+          const plural = n === 1 ? "" : "s";
+          const text = skipped.every((v) => v === "correct")
+            ? `${n} question${plural} answered correctly, not shown`
+            : `${n} question${plural} not shown`;
+          skipped = [];
+          add(
+            `<article class="event elided"><div class="label">${escapeHtml(text)}</div></article>`,
+          );
+        };
         for (const event of data.events) {
+          if (event.kind === "answer" && event.state === "ANSWER_RECEIVED") {
+            skipped.push((event.turn || {}).verdict);
+            continue;
+          }
+          flushSkipped();
           if (event.kind === "protocol") {
             add(
               `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span></div></article>`,
@@ -411,7 +440,6 @@
               event.turn.speech,
             );
           } else if (event.kind === "answer") {
-            if (event.state === "ANSWER_RECEIVED") continue;
             add(
               `<article class="event answer"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
               event.turn.speech,
@@ -435,6 +463,7 @@
             );
           }
         }
+        flushSkipped();
       }
       // Recording narration over a timeline that advances itself is impossible:
       // 450 ms is not a gap you can speak into. In step mode the session waits
