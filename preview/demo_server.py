@@ -99,7 +99,7 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
     for _ in range(32):
         result = await client.call_tool(
             "start_practice",
-            {"study_set_id": "computer_science_fundamentals", "length": 2, "student": student},
+            {"study_set_id": "computer_science_fundamentals", "length": 4, "student": student},
         )
         candidate = payload(result)
         if CS_IDENTITY in candidate.get("question", "").lower():

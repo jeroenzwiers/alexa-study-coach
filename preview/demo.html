@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Study Coach | Alexa+ proof</title>
+    <link rel="icon" href="data:," />
     <style>
       :root {
         --ink: #17202b;
@@ -230,6 +231,10 @@
         padding: 0;
         list-style: none;
       }
+      /* Exactly two children per item - the tick and one span holding all the
+         text. Loose text nodes next to a <b> would each become a flex item and
+         `gap` would push them apart, which showed up as a space before the
+         comma in "chosen, not shuffled". */
       .promise li {
         display: flex;
         align-items: baseline;
@@ -355,16 +360,16 @@
         </p>
         <ol>
           <li data-key="attributed">
-            <span class="tick" aria-hidden="true">—</span>The word
-            <b>attributed</b>
+            <span class="tick" aria-hidden="true">—</span>
+            <span>The word <b>attributed</b></span>
           </li>
           <li data-key="chosen">
-            <span class="tick" aria-hidden="true">—</span>A question that was
-            <b>chosen</b>, not shuffled
+            <span class="tick" aria-hidden="true">—</span>
+            <span>A question that was <b>chosen</b>, not shuffled</span>
           </li>
           <li data-key="closed">
-            <span class="tick" aria-hidden="true">—</span>A confusion being
-            <b>closed</b>
+            <span class="tick" aria-hidden="true">—</span>
+            <span>A confusion being <b>closed</b></span>
           </li>
         </ol>
       </section>

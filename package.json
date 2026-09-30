@@ -1,0 +1,9 @@
+{
+  "name": "alexa-study-coach-harness",
+  "private": true,
+  "description": "Optional browser harness for the demo shell. The project itself is Python; this exists only so harness/test_demo_browser.mjs can drive a real browser.",
+  "type": "module",
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

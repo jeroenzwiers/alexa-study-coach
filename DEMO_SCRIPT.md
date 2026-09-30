@@ -16,13 +16,16 @@ let it run.
 
 | | |
 | --- | --- |
-| the session, spoken: 344 words | **130 s** |
-| your narration: 94 words at 150 wpm | 38 s |
-| **total** | **2:47** |
+| the session, spoken: 26 utterances | **136 s** |
+| your narration: 83 words at 150 wpm | 33 s |
+| **total** | **2:48** |
 
-That leaves 13 seconds of margin. If you speak slowly, you have about 30 words
-of room and no more - one extra sentence, not three. An earlier draft with 260
-words of narration ran 3:11 with everything speaking.
+Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
+real browser, records every utterance with the time real speech would take, and
+adds them up. At 140 wpm you land on 2:51.
+
+That leaves about 10 seconds. You have room for one extra sentence, not three -
+an earlier draft with 260 words of narration ran 3:11.
 
 ## Before you record
 
@@ -57,9 +60,8 @@ reciting them.
 > "You can't. A score says how much a student got wrong. It says nothing about
 > what they misunderstood."
 >
-> "Study Coach revises out loud with a student. When they miss, it doesn't
-> record that the answer was wrong. It records **which idea they reached for
-> instead**."
+> "Study Coach revises out loud with a student. It records **which idea they
+> reached for instead**."
 >
 > "Three things to watch for. The word *attributed*. A question that was
 > **chosen**, not shuffled. And a confusion being **closed**."
