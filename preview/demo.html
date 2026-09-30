@@ -220,13 +220,20 @@
         margin: 0 0 14px;
         font-size: 17px;
       }
+      /* No list markers and no CSS escapes here. The tick is a character in the
+         markup, swapped by a class - an escaped one got mangled into "13" on
+         the way through a build step and sat there looking broken. */
       .promise ol {
         display: grid;
-        gap: 9px;
+        gap: 10px;
         margin: 0;
-        padding-left: 20px;
+        padding: 0;
+        list-style: none;
       }
       .promise li {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
         color: var(--muted);
         font:
           13px ui-monospace,
@@ -237,12 +244,16 @@
         color: var(--ink);
         font-weight: 600;
       }
-      .promise li.met,
-      .promise li.met b {
-        color: var(--teal);
+      .promise .tick {
+        flex: none;
+        width: 13px;
+        color: var(--line);
+        font-weight: 700;
       }
-      .promise li.met::marker {
-        content: "¹3  ";
+      .promise li.met,
+      .promise li.met b,
+      .promise li.met .tick {
+        color: var(--teal);
       }
       /* Once the run starts it becomes a thin strip that stays in view, so the
          three items are still being ticked off while the cards scroll. */
@@ -259,14 +270,16 @@
       }
       .promise.pinned ol {
         grid-auto-flow: column;
-        justify-content: start;
-        gap: 26px;
-        padding-left: 18px;
+        justify-content: space-between;
+        gap: 30px;
       }
-      @media (max-width: 760px) {
+      .promise.pinned li {
+        font-size: 12px;
+      }
+      @media (max-width: 900px) {
         .promise.pinned ol {
           grid-auto-flow: row;
-          gap: 6px;
+          gap: 5px;
         }
       }
       .event.quiet {
@@ -341,9 +354,18 @@
           records <b>which idea they reached for instead</b>.
         </p>
         <ol>
-          <li data-key="attributed">The word <b>attributed</b></li>
-          <li data-key="chosen">A question that was <b>chosen</b>, not shuffled</li>
-          <li data-key="closed">A confusion being <b>closed</b></li>
+          <li data-key="attributed">
+            <span class="tick" aria-hidden="true">—</span>The word
+            <b>attributed</b>
+          </li>
+          <li data-key="chosen">
+            <span class="tick" aria-hidden="true">—</span>A question that was
+            <b>chosen</b>, not shuffled
+          </li>
+          <li data-key="closed">
+            <span class="tick" aria-hidden="true">—</span>A confusion being
+            <b>closed</b>
+          </li>
         </ol>
       </section>
       <div id="status">Ready to call the Study Coach MCP server.</div>
@@ -519,10 +541,17 @@
         chosen: "CONTRAST_PROBE",
         closed: "CONFUSION_RESOLVED",
       };
+      // The tick is written from here rather than through CSS `content`, so
+      // there is no escape sequence for a build step to mangle.
+      const TICK = "✓";
+      const UNMET = "—";
       function keepPromise(state) {
         for (const item of promise.querySelectorAll("li")) {
           const marker = PROMISES[item.dataset.key];
-          if (marker && state.includes(marker)) item.classList.add("met");
+          if (!marker || !state.includes(marker)) continue;
+          item.classList.add("met");
+          const tick = item.querySelector(".tick");
+          if (tick) tick.textContent = TICK;
         }
       }
       function collect(data) {
@@ -635,7 +664,11 @@
         run.disabled = true;
         if (synth) synth.cancel();
         promise.classList.add("pinned");
-        for (const item of promise.querySelectorAll("li")) item.classList.remove("met");
+        for (const item of promise.querySelectorAll("li")) {
+          item.classList.remove("met");
+          const tick = item.querySelector(".tick");
+          if (tick) tick.textContent = UNMET;
+        }
         status.textContent = "Calling the real MCP endpoint...";
         timeline.innerHTML = "";
         try {
