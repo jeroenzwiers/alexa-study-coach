@@ -106,15 +106,22 @@ The server settles the chloroplasts side first, so `SIDE_B_MASTERED` appears
 before `SIDE_A_MASTERED`. Read the labels off the screen; the order is
 deterministic but it is not alphabetical.
 
-Then a dashed card: **7 questions answered correctly, not shown**. Four words
-over it, and do not hurry them:
+Then seven pale cards slide past on their own - the rest of the session, every
+one correct, each tagged `correct`. Step mode does not stop on them. Four words
+over that run, and do not hurry them:
 
 > "And everything else - right."
 
-That card is the argument nobody makes out loud. This student is not weak at
+That run is the argument nobody makes out loud. This student is not weak at
 biology. They know the cell. They had one pair the wrong way round, and it is
 now sorted. A score of eleven out of thirteen hides exactly that, which is the
 whole reason this project exists.
+
+**If you find you have room**, there is one more thing on those cards worth
+saying, and it is not in the word count above. Every card carries
+`question N of M`, and at the contrast probe the M changes: **13 becomes 15**.
+The session got two questions longer because it found something. Nothing else
+in the demo shows the product making a decision quite that plainly.
 
 ## 1:50-2:00 - What survives the session
 
