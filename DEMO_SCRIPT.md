@@ -28,21 +28,25 @@ Point to **CONFUSION_DETECTED** and **CONTRAST_PROBE**.
 
 ## 0:45-1:15: Resolve the distinction
 
-**Study Coach:** "Which organelle releases energy from glucose? Is it the mitochondria, or the chloroplasts?"
-
-**Student:** "Mitochondria."
-
-**Study Coach:** "Exactly."
-
-Point to **SIDE_A_MASTERED**. It must not yet say resolved.
-
-**Study Coach:** "Which organelle captures light energy in a plant cell?"
+**Study Coach:** "Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?"
 
 **Student:** "Chloroplasts."
 
-**Study Coach:** "Yes, and that's the pair sorted. You've just had them both right. That one's done."
+**Study Coach:** "Exactly - that's the difference."
 
-Point to **SIDE_B_MASTERED** and **CONFUSION_RESOLVED**.
+Point to **SIDE_B_MASTERED**. It must not yet say resolved.
+
+**Study Coach:** "Which organelle releases energy from glucose?"
+
+**Student:** "The mitochondria."
+
+**Study Coach:** "Yes - and that's the pair sorted. You had the chloroplasts and the mitochondria the wrong way round twice tonight, and you've just had them both right. That one's done."
+
+Point to **SIDE_A_MASTERED** and **CONFUSION_RESOLVED**.
+
+The server settles the chloroplasts side first and the mitochondria side second, so
+`SIDE_B_MASTERED` appears before `SIDE_A_MASTERED`. Read the labels off the screen
+rather than from memory; the order is deterministic but it is not alphabetical.
 
 ## 1:15-1:35: Remembered context
 

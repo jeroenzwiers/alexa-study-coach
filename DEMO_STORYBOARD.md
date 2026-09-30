@@ -5,8 +5,8 @@
 | 0:00-0:15 | Opening headline, click **Run live session** | "A normal study app knows you were wrong. Study Coach knows what you confused it with."      | QUESTION                                             |
 | 0:15-0:28 | First returned question and answer card      | Student says "Chloroplasts." Coach explains the chloroplasts were reached for.               | ANSWER_RECEIVED, ATTRIBUTED_TO                       |
 | 0:28-0:45 | Mirrored target appears                      | Student says "Mitochondria." Coach says "Let's separate those two."                          | POSSIBLE_CONFUSION, CONFUSION_DETECTED               |
-| 0:45-1:00 | Contrast question with two concepts          | "Which organelle releases energy from glucose? Is it the mitochondria, or the chloroplasts?" | CONTRAST_PROBE                                       |
-| 1:00-1:15 | First side correct, then second side correct | Coach says "Exactly," then "That one's done."                                                | SIDE_A_MASTERED, SIDE_B_MASTERED, CONFUSION_RESOLVED |
+| 0:45-1:00 | Contrast question with two concepts          | "Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?" | CONTRAST_PROBE                                       |
+| 1:00-1:15 | First side correct, then second side correct | Coach says "Exactly - that's the difference," then "That one's done."                        | SIDE_B_MASTERED, then SIDE_A_MASTERED, CONFUSION_RESOLVED |
 | 1:15-1:35 | Persisted progress and restart cards         | "The diagnosis is not thrown away when the session ends."                                    | PERSISTED_STATE                                      |
 | 1:35-1:55 | Static architecture frame                    | "The shell is only a client. The Study Coach server owns every decision."                    | TECHNICAL PROOF                                      |
 | 1:55-2:15 | MCP connection row                           | "No LLM is on the live grading path."                                                        | NO LLM ON LIVE GRADING PATH                          |
@@ -29,10 +29,17 @@ Study Coach server
         +-> persistence
 
 NO LLM ON LIVE GRADING PATH
-32 ms worst round-trip in latest passing local MCP smoke run
+grading: 11 ms median, 50 ms p99 over 10,400 calls
 ```
 
-The timing is local MCP smoke-test timing only, not production or Alexa+ network latency.
+Those two figures are the grading call itself, measured by `harness/bench_grading.py`
+on an otherwise idle machine. The round-trip worst case is deliberately not on the
+frame: it swings with whatever else the laptop is doing - 169 ms with nothing else
+running, 912 ms with the demo shell alongside - and a number that moves by a factor
+of five does not belong in a claim. Close everything you do not need before
+recording, for the same reason.
+
+The timing is local measurement only, not production or Alexa+ network latency.
 
 ## Clean capture frames
 

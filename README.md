@@ -255,10 +255,17 @@ answer. That judgement is deterministic, explainable, and free:
 
 |                                | measured                                 |
 | ------------------------------ | ---------------------------------------- |
-| grading, median                | **9.2 ms**                               |
-| grading, p99                   | **22.3 ms** — 4% of the platform budget  |
-| MCP round trip, median / worst | **14 ms** / **143 ms**                   |
-| model calls while answering    | **0**                                    |
+| grading, median                | **11.3 ms**                               |
+| grading, p99                   | **49.6 ms** — 10% of the platform budget  |
+| MCP round trip, median / worst | **14–20 ms** / **169–239 ms**             |
+| model calls while answering    | **0**                                     |
+
+Every figure here is measured on an otherwise idle laptop, and that qualifier is
+load-bearing rather than polite. Running the presentation shell alongside the
+server moves grading p99 from 49.6 ms to 119.3 ms and the round-trip worst case
+from 239 ms to 912 ms — through the budget. Nothing about the code changed; the
+machine was busy. Read these as what the work costs, not as a guarantee about
+the box it runs on.
 
 Reproduce the grading figures with `harness/bench_grading.py`: 10,400 calls
 against the full thirteen-card set, each on an utterance the grader has not seen
@@ -269,8 +276,13 @@ in production and report a grader that never does any work. An earlier version
 of this table was measured that way and read about three times faster than the
 truth.
 
-The round trip is what `harness/smoke_client.py` sees over Streamable HTTP,
-worst case being the first call into a cold server. It was re-measured over
+The round trip is what `harness/smoke_client.py` sees over Streamable HTTP. The
+worst case is the first tool call of a new MCP session, and it is worth being
+exact about which "first" that is: not the first call into a cold process, but
+the first call of each session, still 551 ms against a server that had been up
+for an hour and served hundreds of calls. Every call after it in the same
+session lands between 10 and 37 ms. Something is initialised lazily per session
+and has not been chased down. It was re-measured over
 three runs after bearer validation went in front of every request and did not
 move out of its own run-to-run spread (medians 12.7 / 15.1 / 19.8 ms), which is
 what verifying an HMAC signature should cost. A deployment validating RS256

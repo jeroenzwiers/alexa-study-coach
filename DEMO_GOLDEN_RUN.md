@@ -24,8 +24,8 @@ The shell receives these proof states from real MCP responses:
 2. `ANSWER_RECEIVED · ATTRIBUTED_TO`: learner answer `chloroplasts`; returned `heard_as` is `The chloroplasts`.
 3. `ANSWER_RECEIVED`: intervening known answers.
 4. `CONFUSION_DETECTED · CONTRAST_PROBE`: learner answer `mitochondria` to the chloroplasts-target question; returned contrast contains both concepts and `heard_as` is `The mitochondria`.
-5. `SIDE_A_MASTERED`: learner answers the mitochondria side correctly; no `resolved_confusion` is present.
-6. `SIDE_B_MASTERED` and `CONFUSION_RESOLVED`: learner answers the chloroplasts side correctly; `resolved_confusion` is present.
+5. `SIDE_B_MASTERED`: learner answers the chloroplasts side correctly; no `resolved_confusion` is present.
+6. `SIDE_A_MASTERED` and `CONFUSION_RESOLVED`: learner answers the mitochondria side correctly; `resolved_confusion` is present.
 7. `PERSISTED_STATE`: `student_progress` reports the pair as settled for good.
 8. `PERSISTED_STATE`: a new `start_practice` call says, "Welcome back. You sorted out 1 confusion last time."
 
