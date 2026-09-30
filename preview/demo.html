@@ -109,6 +109,24 @@
       .event.restart {
         border-left-color: var(--gold);
       }
+      .event.class {
+        border-left-color: var(--teal);
+        background: var(--teal-soft);
+      }
+      .event.subject {
+        border-left-color: var(--ink);
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .event.subject .label,
+      .event.subject .speech {
+        color: var(--paper);
+      }
+      .event.subject h2 {
+        margin: 4px 0 0;
+        font-size: 25px;
+        font-weight: 400;
+      }
       .label {
         color: var(--muted);
         font:
@@ -157,6 +175,36 @@
         color: var(--muted);
         font-style: italic;
       }
+      .controls {
+        display: grid;
+        gap: 9px;
+        justify-items: end;
+      }
+      .voice-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font:
+          12px ui-monospace,
+          monospace;
+        cursor: pointer;
+      }
+      #voice {
+        max-width: 240px;
+        padding: 6px 7px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          12px ui-monospace,
+          monospace;
+      }
+      .event.speaking {
+        border-left-color: var(--ink);
+        box-shadow: 0 2px 14px #17202b1f;
+      }
       footer {
         margin-top: 25px;
         color: var(--muted);
@@ -188,7 +236,25 @@
             confused it with.
           </p>
         </div>
-        <button id="run" type="button">Run live session</button>
+        <div class="controls">
+          <button id="run" type="button">Run live session</button>
+          <label class="voice-row">
+            <input id="voice-on" type="checkbox" checked />
+            Speak the session aloud
+          </label>
+          <label class="voice-row">
+            <input id="step-on" type="checkbox" />
+            Step with the space bar
+          </label>
+          <label class="voice-row">
+            coach
+            <select id="voice" aria-label="Coach voice"></select>
+          </label>
+          <label class="voice-row">
+            student
+            <select id="voice-student" aria-label="Student voice"></select>
+          </label>
+        </div>
       </header>
       <div id="status">Ready to call the Study Coach MCP server.</div>
       <section id="timeline" class="timeline">
@@ -196,7 +262,8 @@
       </section>
       <footer>
         Presentation shell only. Every decision below comes from the real
-        Streamable HTTP MCP server.
+        Streamable HTTP MCP server. The spoken voice is the browser's own speech
+        synthesis, not Amazon's.
       </footer>
     </main>
     <script>
@@ -227,11 +294,112 @@
           out.push(`<span class="tag bad">not merely wrong</span>`);
         return out.length ? `<div class="detail">${out.join("")}</div>` : "";
       }
-      function add(html) {
-        timeline.insertAdjacentHTML("beforeend", html);
+      // The shell can read the coach's lines aloud. It uses the browser's own
+      // speech synthesis, deliberately not an imitation of the Alexa voice -
+      // that one is Amazon's and not ours to reproduce, and the footer says so
+      // on screen. With the voice off the whole timeline renders at once, which
+      // is what a dry run wants.
+      const voiceOn = document.querySelector("#voice-on");
+      const voicePicker = document.querySelector("#voice");
+      const studentPicker = document.querySelector("#voice-student");
+      const synth = window.speechSynthesis;
+
+      // The student is pitched up and the coach is not, so the two are told
+      // apart by ear even when the machine has only one installed voice - which
+      // is the common case on Windows without Edge. Choosing two different
+      // voices in the pickers works too, and sounds better.
+      const COACH = { pitch: 0.95, rate: 0.97 };
+      const STUDENT = { pitch: 1.45, rate: 1.03 };
+
+      // Edge exposes online neural voices next to the dated local ones. On a
+      // machine whose only installed voice is "Microsoft Zira Desktop", which
+      // one is picked is the whole impression, so the good ones sort first.
+      function rank(voice) {
+        const name = voice.name.toLowerCase();
+        if (name.includes("natural")) return 3;
+        if (name.includes("online")) return 2;
+        return voice.localService ? 0 : 1;
       }
-      function render(data) {
-        timeline.innerHTML = "";
+      function englishVoices() {
+        if (!synth) return [];
+        return synth
+          .getVoices()
+          .filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"))
+          .sort((a, b) => rank(b) - rank(a));
+      }
+      // Browsers publish the voice list asynchronously, so the first call here
+      // usually sees nothing and a later `voiceschanged` fills it in. The
+      // checkbox therefore has to be switched back on when voices do arrive -
+      // unless the user has already made their own choice.
+      let voiceChosenByHand = false;
+      voiceOn.addEventListener("change", () => {
+        voiceChosenByHand = true;
+      });
+      function fillOne(picker, voices, fallbackIndex) {
+        const chosen = picker.value;
+        picker.innerHTML = "";
+        for (const voice of voices) {
+          const option = document.createElement("option");
+          option.value = voice.name;
+          option.textContent = `${voice.name} (${voice.lang})`;
+          picker.append(option);
+        }
+        picker.value =
+          chosen && voices.some((v) => v.name === chosen)
+            ? chosen
+            : voices[Math.min(fallbackIndex, voices.length - 1)].name;
+      }
+      function fillVoices() {
+        const voices = englishVoices();
+        if (!voices.length) {
+          for (const picker of [voicePicker, studentPicker]) {
+            picker.innerHTML = "<option>no English voice available</option>";
+            picker.disabled = true;
+          }
+          voiceOn.checked = false;
+          voiceOn.disabled = true;
+          return;
+        }
+        voicePicker.disabled = false;
+        studentPicker.disabled = false;
+        voiceOn.disabled = false;
+        if (!voiceChosenByHand) voiceOn.checked = true;
+        fillOne(voicePicker, voices, 0);
+        // Index 1 when there is a second voice, so two installed voices are
+        // used by default rather than waiting to be asked for.
+        fillOne(studentPicker, voices, 1);
+      }
+      fillVoices();
+      if (synth) synth.addEventListener("voiceschanged", fillVoices);
+
+      const speaking = () => Boolean(synth) && voiceOn.checked && !voicePicker.disabled;
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      function say(text, picker, style) {
+        return new Promise((resolve) => {
+          if (!speaking() || !text) return resolve();
+          const utterance = new SpeechSynthesisUtterance(text);
+          const voice = englishVoices().find((v) => v.name === picker.value);
+          if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+          }
+          utterance.pitch = style.pitch;
+          utterance.rate = style.rate;
+          // Resolve on error as well. A voice that refuses to start must not
+          // leave the timeline frozen halfway through a recording.
+          utterance.onend = resolve;
+          utterance.onerror = resolve;
+          synth.speak(utterance);
+        });
+      }
+
+      let cards = [];
+      function add(html, spoken, answer) {
+        cards.push({ html, spoken: spoken || "", answer: answer || "" });
+      }
+      function collect(data) {
+        cards = [];
         for (const event of data.events) {
           if (event.kind === "protocol") {
             add(
@@ -240,11 +408,22 @@
           } else if (event.kind === "start") {
             add(
               `<article class="event"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+              event.turn.speech,
             );
           } else if (event.kind === "answer") {
             if (event.state === "ANSWER_RECEIVED") continue;
             add(
               `<article class="event answer"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+              event.turn.speech,
+              event.answer,
+            );
+          } else if (event.kind === "subject") {
+            add(
+              `<article class="event subject"><div class="label">${escapeHtml(event.state)}</div><h2>${escapeHtml(event.title)}</h2>${speech(event.text)}</article>`,
+            );
+          } else if (event.kind === "class") {
+            add(
+              `<article class="event class"><div class="label">${escapeHtml(event.state)} · class_report</div>${speech(event.text)}<div class="detail"><span class="tag good">counts, never names</span><span class="tag">simulated cohort</span></div></article>`,
             );
           } else if (event.kind === "persistence") {
             add(
@@ -257,16 +436,65 @@
           }
         }
       }
+      // Recording narration over a timeline that advances itself is impossible:
+      // 450 ms is not a gap you can speak into. In step mode the session waits
+      // for the space bar instead, so the pace is the narrator's.
+      const stepOn = document.querySelector("#step-on");
+      function waitForStep(idle) {
+        return new Promise((resolve) => {
+          status.textContent = "Space for the next card";
+          const done = () => {
+            window.removeEventListener("keydown", onKey);
+            timeline.removeEventListener("click", done);
+            status.textContent = idle;
+            resolve();
+          };
+          const onKey = (event) => {
+            if (event.code === "Space" || event.key === " ") {
+              event.preventDefault();
+              done();
+            }
+          };
+          window.addEventListener("keydown", onKey);
+          timeline.addEventListener("click", done);
+        });
+      }
+      async function play(idle) {
+        timeline.innerHTML = "";
+        for (const [index, card] of cards.entries()) {
+          timeline.insertAdjacentHTML("beforeend", card.html);
+          const node = timeline.lastElementChild;
+          node.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (speaking()) {
+            node.classList.add("speaking");
+            // The student answers first, then the coach replies to it. That is
+            // the order the session actually happened in, and it is what turns
+            // the timeline into a conversation rather than a monologue.
+            if (card.answer) {
+              await say(card.answer, studentPicker, STUDENT);
+              await wait(280);
+            }
+            await say(card.spoken, voicePicker, COACH);
+            node.classList.remove("speaking");
+          }
+          if (index === cards.length - 1) break;
+          if (stepOn.checked) await waitForStep(idle);
+          else await wait(450);
+        }
+      }
       run.addEventListener("click", async () => {
         run.disabled = true;
+        if (synth) synth.cancel();
         status.textContent = "Calling the real MCP endpoint...";
         timeline.innerHTML = "";
         try {
           const response = await fetch("/api/demo", { method: "POST" });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || "MCP call failed");
-          render(data);
-          status.textContent = `Complete · ${data.mcp_url}`;
+          collect(data);
+          const idle = `Complete · ${data.mcp_url}`;
+          status.textContent = idle;
+          await play(idle);
         } catch (error) {
           status.textContent = `Could not reach MCP server: ${error.message}`;
         } finally {
