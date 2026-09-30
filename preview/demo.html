@@ -496,13 +496,14 @@
 
       let cards = [];
       const promise = document.querySelector("#promise");
-      function add(html, spoken, answer, quiet, state) {
+      function add(html, spoken, answer, quiet, state, question) {
         cards.push({
           html,
           spoken: spoken || "",
           answer: answer || "",
           quiet: Boolean(quiet),
           state: state || "",
+          question: question || "",
         });
       }
       // Each promise is ticked by the card that delivers it. The keys are the
@@ -536,12 +537,14 @@
             // stepped on: it keeps the question numbering honest and slides
             // past, rather than competing with the cards that carry the story.
             const quiet = event.state === "ANSWER_RECEIVED";
+            const mute = quiet || Boolean(event.mute);
             add(
               `<article class="event answer${quiet ? " quiet" : ""}"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
-              quiet ? "" : event.turn.speech,
-              quiet ? "" : event.answer,
+              mute ? "" : event.turn.speech,
+              mute ? "" : event.answer,
               quiet,
               event.state,
+              mute ? "" : event.asked_question,
             );
           } else if (event.kind === "subject") {
             add(
@@ -587,13 +590,23 @@
       }
       async function play(idle) {
         timeline.innerHTML = "";
+        let spokenLast = false;
         for (const [index, card] of cards.entries()) {
           timeline.insertAdjacentHTML("beforeend", card.html);
           const node = timeline.lastElementChild;
           keepPromise(card.state);
           node.scrollIntoView({ behavior: "smooth", block: "center" });
-          if (speaking()) {
+          if (speaking() && !card.quiet) {
             node.classList.add("speaking");
+            // Each coach line ends by asking the NEXT question, so silencing a
+            // card orphans the question the card before it just asked - you
+            // hear question two asked and the answer to question four given.
+            // When the run of speech was broken, this card asks its own
+            // question first, and the exchange is whole again.
+            if (!spokenLast && card.question) {
+              await say(card.question, voicePicker, COACH);
+              await wait(250);
+            }
             // The student answers first, then the coach replies to it. That is
             // the order the session actually happened in, and it is what turns
             // the timeline into a conversation rather than a monologue.
@@ -603,6 +616,9 @@
             }
             await say(card.spoken, voicePicker, COACH);
             node.classList.remove("speaking");
+            spokenLast = true;
+          } else {
+            spokenLast = false;
           }
           if (index === cards.length - 1) break;
           if (stepOn.checked && !card.quiet) await waitForStep(idle);

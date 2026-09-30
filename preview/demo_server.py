@@ -126,27 +126,33 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
         )
         turn = payload(result)
         lowered = asked.lower()
+        # Every turn is emitted, not only the two that matter. The shell sets
+        # the ordinary ones quietly, and they keep the question numbering whole
+        # - the same reason the biology act shows all of its cards.
+        state = "ANSWER_RECEIVED"
         if CS_IDENTITY in lowered:
             mirrored = True
-            events.append({
-                "kind": "answer",
-                "state": "ANSWER_RECEIVED · ATTRIBUTED_TO",
-                "asked_question": asked,
-                "answer": answer,
-                "turn": turn,
-            })
+            state = "ANSWER_RECEIVED · ATTRIBUTED_TO"
         elif CS_PERMISSION in lowered:
-            events.append({
-                "kind": "answer",
-                "state": "CONFUSION_DETECTED · CONTRAST_PROBE"
+            state = (
+                "CONFUSION_DETECTED · CONTRAST_PROBE"
                 if turn.get("contrast")
-                else "ANSWER_RECEIVED · ATTRIBUTED_TO",
-                "asked_question": asked,
-                "answer": answer,
-                "turn": turn,
-            })
-            if turn.get("contrast"):
-                return
+                else "ANSWER_RECEIVED · ATTRIBUTED_TO"
+            )
+        events.append({
+            "kind": "answer",
+            "state": state,
+            "asked_question": asked,
+            "answer": answer,
+            "turn": turn,
+            # Shown, never spoken. This act's job is recognition, and for this
+            # audience the two words do that on sight. Speaking it as well costs
+            # 36 seconds of a 3-minute budget to say what the screen already
+            # said - and the budget is the binding constraint, not the idea.
+            "mute": True,
+        })
+        if CS_PERMISSION in lowered and turn.get("contrast"):
+            return
 
 
 async def run_demo() -> dict:

@@ -1,7 +1,7 @@
 # Study Coach Golden Demo Script
 
-**Target runtime:** 2:50. Hard limit 3:00 - judges are not required to watch
-past it. A simulated Alexa+ experience backed by the real MCP server.
+**Target runtime:** 2:31-2:45 depending on delivery. Hard limit 3:00 - judges
+are not required to watch past it. A simulated Alexa+ experience backed by the real MCP server.
 
 The shape is **a promise and three payoffs**. The opening tells the viewer
 exactly what to watch for; the session then delivers it, and barely needs
@@ -10,31 +10,41 @@ session, and a narrator talking across them is what makes a demo hard to follow.
 
 ## The arithmetic, because it is tight
 
-The synthesised voices speak 194 words across seven cards: about **78 seconds**,
-and not something you control. The narration is 250 words, and how long that
-takes is entirely down to you.
+The synthesised voices speak 144 words across the biology act: about **58
+seconds**, and not something you control. The narration is 250 words, and how
+long that takes is entirely down to you.
 
 | your delivery | narration | total |
 | --- | --- | --- |
-| 140 wpm, unhurried | 107 s | **3:05** - over the limit |
-| 150 wpm, normal | 100 s | **2:58** |
-| 160 wpm, brisk | 94 s | **2:51** |
+| 140 wpm, unhurried | 107 s | **2:44** |
+| 150 wpm, normal | 100 s | **2:37** |
+| 160 wpm, brisk | 94 s | **2:31** |
 
-So **time yourself reading the opening block before you record anything.** It is
-81 words; if it takes you longer than 33 seconds, the close will fall outside
-the three minutes and judges are not required to watch that far - and the close
-is the punchline.
+All three fit inside the three minutes, which was not true of two earlier
+drafts - one ran 4:03 - so the margin is deliberate rather than lucky. Time
+yourself on the 81-word opening block anyway: if it takes much over 35 seconds
+you are slower than the table assumes and the close gets tight.
 
-Two levers if you run long, in the order I would use them:
+Two levers if you do run long, in the order I would use them:
 
 1. Cut the persistence line at 1:50 (17 words). The card says it on screen.
 2. Cut the second class-report line at 2:20 (14 words). It is the best sentence
    in the script, so cut it last.
 
-An earlier draft ran 4:03 and would never have been watched to the end. Three
-cards - the two persistence cards and the class report - were taken out of the
-spoken stream for this reason; the narrator covers them, and the viewer reads
-them.
+**What is spoken and what is not.** The biology act speaks: the student's answer
+in one voice, the coach's reply in the other. The ordinary correct answers, the
+two persistence cards, the whole computer science act and the class report are
+shown but silent - the narrator carries those, and the viewer reads them.
+Speaking the computer science act as well cost 36 seconds to say what the screen
+already said.
+
+One thing the shell does that is worth knowing, because it sounds like a
+mistake and is not: each coach line ends by asking the *next* question, so when
+a run of silent cards breaks the chain, the next spoken card asks its own
+question again before the answer. That is why you hear "Which organelle captures
+light energy in a plant cell?" twice - once trailing an earlier card, once
+opening this one. Without it you hear question two asked and question four
+answered.
 
 ## Before you record
 
@@ -141,18 +151,19 @@ in the demo shows the product making a decision quite that plainly.
 
 ## 2:00-2:20 - None of that was about biology
 
-A black `SECOND SUBJECT` card, then two beats on Computer Science Fundamentals.
+A black `SECOND SUBJECT` card, then Computer Science Fundamentals. This act is
+**silent** - shown, not spoken. For this audience the two words do the work on
+sight, and your voice is the only thing on the soundtrack here.
 
 > "None of that was a biology feature. Same server, another subject - and I
 > suspect this pair is familiar."
 
-The student says *authorization*; the coach answers **"Not quite - that's
-authorization. Authentication verifies identity; authorization decides which
-actions that identity may take."** Then the mirror: the student says
-*authentication*, and `CONFUSION_DETECTED · CONTRAST_PROBE` comes back with
+The student says *authorization* to "What process verifies that a user is who
+they claim to be?", and the card comes back tagged `attributed to
+Authorization`. Then the mirror, and `CONFUSION_DETECTED · CONTRAST_PROBE` with
 `contrast: authorization vs authentication`.
 
-Let those two land on their own. No narration over them - the pair does the work.
+Step mode stops on both. Give them a beat each and say nothing over them.
 
 ## 2:20-2:45 - Across a class, it stops being about one student
 
