@@ -52,6 +52,17 @@ them.
 
 Hold on the opening screen. Do not click.
 
+The intro is on the screen as well as in your mouth, so a judge watching with
+the sound off still gets the premise. Under the headline sits a panel: one
+sentence on what Study Coach is, then the three things to watch for, numbered.
+You are reading those three items off the screen, not reciting them.
+
+The moment you click, that panel shrinks to a thin strip and sticks to the top
+of the window, and each of the three ticks itself off in teal as the session
+delivers it - `attributed` at 0:45, `chosen` at 1:05, `closed` at 1:25. The
+promise stays in shot the whole way. Nothing lights up early: each tick is
+driven by the proof state on the card the server actually sent.
+
 > "Here's a report card. Seven out of ten."
 >
 > *(beat)*
