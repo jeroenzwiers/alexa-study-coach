@@ -66,6 +66,25 @@ def cs_answer(question: str, mirrored: bool) -> str:
     return "i dont know"
 
 
+# The restarted session opens by asking a question, because that is what
+# start_practice does. Leaving it hanging and cutting to another subject reads
+# as a jump - so it gets answered, correctly, and the greeting lands as what it
+# is: the next session actually carrying on.
+CORRECT = {
+    **{cue: answer for cue, answer in ANSWERS.items()},
+    "releases energy": "the mitochondria",
+    "captures light": "chloroplasts",
+}
+
+
+def correct_answer(question: str) -> str:
+    lowered = (question or "").lower()
+    for cue, answer in CORRECT.items():
+        if cue in lowered:
+            return answer
+    return "i dont know"
+
+
 def payload(result) -> dict:
     return dict(result.structured_content or {})
 
@@ -244,7 +263,21 @@ async def run_demo() -> dict:
                 "start_practice",
                 {"study_set_id": "biology_cells", "length": 1, "student": student},
             )
-            events.append({"kind": "restart", "state": "PERSISTED_STATE", "turn": payload(restarted)})
+            restart_turn = payload(restarted)
+            events.append({"kind": "restart", "state": "PERSISTED_STATE", "turn": restart_turn})
+
+            answer = correct_answer(restart_turn.get("question", ""))
+            result = await client.call_tool(
+                "submit_answer",
+                {"session_id": restart_turn["session_id"], "response": answer},
+            )
+            events.append({
+                "kind": "answer",
+                "state": "ANSWER_RECEIVED",
+                "asked_question": restart_turn.get("question", ""),
+                "answer": answer,
+                "turn": payload(result),
+            })
 
             await run_cs_cutin(client, events)
 

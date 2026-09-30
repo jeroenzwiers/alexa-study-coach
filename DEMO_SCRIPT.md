@@ -16,13 +16,16 @@ let it run.
 
 | | |
 | --- | --- |
-| the session, spoken: 26 utterances | **136 s** |
+| the session, spoken: 28 utterances | **133 s** |
 | your narration: 83 words at 150 wpm | 33 s |
-| **total** | **2:48** |
+| **total** | **2:46** |
 
 Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
 real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm you land on 2:51.
+adds them up. At 140 wpm you land on 2:48.
+
+The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
+go back to 1.06, but that is eight seconds and you would have to drop a line.
 
 That leaves about 10 seconds. You have room for one extra sentence, not three -
 an earlier draft with 260 words of narration ran 3:11.
@@ -83,6 +86,7 @@ give a longer pause:
 | `SIDE_B_MASTERED` | one side right. No resolution tag yet |
 | `SIDE_A_MASTERED · CONFUSION_RESOLVED` | both sides - **tick three**. Last card of the session; it ends on the good news |
 | two gold cards | settled for good, then "Welcome back" - the diagnosis outliving the session |
+| one more answer | the returning session's question, answered right. It is there so the greeting does not end on a question nobody answers |
 | `SECOND SUBJECT` | black card. Computer Science Fundamentals |
 | two more | authentication against authorization, same machinery |
 | `CLASS_REPORT` | nine simulated students, and which half of the distinction is missing |
