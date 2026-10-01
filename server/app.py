@@ -254,7 +254,7 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
             revealed = card.canonical.rstrip(".")
             heard_as = None
             feedback = (
-                f"Not quite - that's {verdict.matched.text}, which is a "
+                f"Not quite - you said {verdict.matched.text}, which is a "
                 f"different thing. The answer is {card.canonical}"
             )
         elif verdict.rung in ("ambiguous", "empty"):
@@ -265,13 +265,18 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
         elif said is not None and pair is not None:
             # A contrast question is coming next, so withhold the answer -
             # revealing it here would leave nothing to distinguish.
-            feedback = f"Not quite - that's {_spoken(said.canonical)}."
+            # Not "that's the mitochondria": that is the shape of a
+            # confirmation, and a child who has just answered "the mitochondria"
+            # is told they are wrong and right in the same six words. Naming what
+            # they reached for is the whole point of this product, so the
+            # sentence has to be unmistakably a naming and not an agreement.
+            feedback = f"Not quite - you said {_spoken(said.canonical)}."
         elif said is not None:
             revealed = card.canonical.rstrip(".")
             # We know WHICH concept was reached for, so name it. A flashcard app
             # has one bit here - right or wrong - and can only ever say "no".
             feedback = (
-                f"Not quite - that's {_spoken(said.canonical)}. "
+                f"Not quite - you said {_spoken(said.canonical)}. "
                 f"{card.misconception} The answer is {card.canonical}"
             )
         else:

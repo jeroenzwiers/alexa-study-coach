@@ -41,7 +41,7 @@ evening, one of those a correct answer, and nearly stopped.
 
 **It attributes concepts the student never uttered.** `"the powerhouse of the
 cell"` - the most commonly taught synonym for the mitochondria - is answered
-with *"Not quite, that's what enters and leaves the cell"*, and a
+with *"Not quite - you said what enters and leaves the cell"*, and a
 mitochondria/cell-membrane confusion is written to the profile. Six distinct
 utterances did this. **This is the direction that fabricates**, and unlike the
 first two it is deterministic, so it is correlated across students: thirty

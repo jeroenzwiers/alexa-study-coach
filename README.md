@@ -11,14 +11,14 @@ Streamable HTTP.
 ```
 ALEXA   : Question 2. Which organelle releases energy from glucose?
 STUDENT : "chloroplasts"
-ALEXA   : Not quite - that's the chloroplasts. Chloroplasts capture energy from
+ALEXA   : Not quite - you said the chloroplasts. Chloroplasts capture energy from
           light; mitochondria release it from food. The answer is The
           mitochondria. Question 3. Which structure gives a plant cell its
           shape and support?
 ...
 ALEXA   : Question 5. Which organelle captures light energy in a plant cell?
 STUDENT : "mitochondria"
-ALEXA   : Not quite - that's the mitochondria. Let's separate those two. Which
+ALEXA   : Not quite - you said the mitochondria. Let's separate those two. Which
           organelle captures light energy in a plant cell? Is it the
           chloroplasts, or the mitochondria?
 STUDENT : "chloroplasts"
