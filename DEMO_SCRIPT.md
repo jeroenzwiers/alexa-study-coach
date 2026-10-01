@@ -1,6 +1,6 @@
 # Study Coach Golden Demo Script
 
-**Target runtime:** 2:47. Hard limit 3:00 - judges are not required to watch past
+**Target runtime:** 2:42. Hard limit 3:00 - judges are not required to watch past
 it. A simulated Alexa+ experience backed by the real MCP server.
 
 **The session talks. You don't, except at the two ends.** Every card speaks -
@@ -17,19 +17,20 @@ let it run.
 | | |
 | --- | --- |
 | the session, spoken: 29 utterances | **127 s** |
-| your narration: 90 words at 150 wpm | 36 s |
-| **total** | **2:43** |
+| your narration: 88 words at 150 wpm | 35 s |
+| **total** | **2:42** |
 
 Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
 real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm you land on 2:45 - seventeen seconds of margin, the most this
-script has ever had. The class report came out and the second act got an ending.
+adds them up. At 140 wpm it is 2:45 and at 130 wpm 2:48, so the margin holds
+even at a slow delivery - which no earlier draft of this script managed.
 
 The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
 go back to 1.06, but that is eight seconds and you would have to drop a line.
 
-That leaves about 10 seconds. You have room for one extra sentence, not three -
-an earlier draft with 260 words of narration ran 3:11.
+Earlier drafts ran 2:59, 3:11 and 4:03. The narration is 88 words because the
+session says the rest, and because a checklist already on the screen does not
+need reading aloud.
 
 ## What is deliberately not in this video
 
@@ -60,44 +61,42 @@ imply a user base.
 - **Two voices, two roles.** Pick different ones in the coach and student
   selectors. Google US English and Google UK English Female work.
 
-## 0:00-0:38 - The problem, and the three things to watch for
+## 0:00-0:35 - The problem, and why it is hard
 
 Hold on the opening screen. Do not click until the last line is out.
 
-The premise is on the screen as well as in your mouth, so a judge watching with
-the sound off still gets it. Read the three items off the panel rather than
-reciting them.
+The premise and the three things to watch for are on the screen, in the panel,
+and they tick themselves off in green as the session delivers them. You do not
+read them aloud - the panel is doing that job, and twenty words spent narrating
+a visible checklist are twenty words not spent on the argument underneath it.
 
-> "Here's a report card. Seven out of ten."
+> "A score tells you a student got it wrong. It can't tell you what they
+> believe."
 >
 > *(beat)*
 >
-> "Now tell me what to do about it."
+> "Study Coach records which idea they reached for instead."
 >
-> *(beat)*
+> "That's harder than it sounds. On spoken answers the worst correct one scores
+> lower than the best wrong one. There is no similarity threshold to draw."
 >
-> "You can't. A score says how much a student got wrong. It says nothing about
-> what they misunderstood."
->
-> "Study Coach records **which idea they reached for instead**."
->
-> "Three things to watch for. The word *attributed*. A question that was
-> **chosen**, not shuffled. And a confusion being **closed**."
+> "So it doesn't measure similarity. It asks which of this deck's answers the
+> student actually said. Eleven milliseconds, and no model in the loop."
+
+Those last two blocks are the strongest technical claim in the project and the
+only place the video makes it. The numbers behind them: on the shipped content
+the lowest legitimate speech distortion scores 0.800 and the highest wrong
+answer that must be rejected scores 0.857. No line fits between them. Do not
+reach for the nucleus/nucleolus example instead - `README.md` carries two honest
+caveats on that pair, and this phrasing is the claim that survives them.
 
 Click **Run live session**, and stop talking.
 
-## 0:45 - One line, over the first miss
+## 0:35-2:30 - The session, which speaks for itself
 
-This is the only place you speak during the session, and it is the sentence that
-makes the difference between a nice feature and the idea the project is built
-on. Let the coach finish, then:
-
-> "Attributed - not marked wrong. A closed set of answers, not a similarity
-> score."
-
-## 0:38-2:40 - The session, otherwise speaking for itself
-
-Press space between cards. Say nothing else. What is happening, so you know where to
+Press space between cards. Say nothing at all until the close - the coach is
+already naming the attribution out loud, and narrating over it says the same
+thing twice in two voices. What is happening, so you know where to
 give a longer pause:
 
 | card | what lands |
@@ -121,17 +120,16 @@ the last card before you speak the close.
 The server settles the chloroplasts side first, so `SIDE_B_MASTERED` appears
 before `SIDE_A_MASTERED`. Deterministic, but not alphabetical.
 
-## 2:35-2:43 - Close
+## 2:30-2:42 - Close
 
 > "A wrong answer isn't a score. It's evidence about what the student believes."
 
 ## If you want to say more
 
-There is room for about one more sentence, not three. In order of what I would
-spend it on:
+There is room for roughly one more sentence. The one I would spend it on, over
+the final `CONFUSION_RESOLVED` card:
 
-1. Over the first miss: "Attribution over a closed set of answers, not a
-   similarity score."
+> "Both sides right. That's the distinction holding - and it's the only good
+> news a revision session can honestly give."
 
-That line is already in the script at 0:45; this is where it would go if you
-cut it and changed your mind.
+Nothing goes over the first miss. The coach is speaking there.
