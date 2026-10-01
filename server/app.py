@@ -384,8 +384,14 @@ def _ask(session, study_set, card, number: int) -> tuple[str, list[str] | None, 
             if confused is not None:
                 options = [_spoken(card.canonical), _spoken(confused.canonical)]
                 random.shuffle(options)
+                # Name the pair rather than pointing at it. "Those two" refers
+                # forward to concepts the sentence has not mentioned - the
+                # student has heard one of them, once, and has to hold the
+                # reference open until the options arrive two clauses later.
+                # Naming them reveals nothing: which of the two answers the
+                # question is still the thing being asked.
                 return (
-                    f"Let's separate those two. {card.question} "
+                    f"Let's separate {options[0]} and {options[1]}. {card.question} "
                     f"Is it {options[0]}, or {options[1]}?",
                     options,
                     "options",

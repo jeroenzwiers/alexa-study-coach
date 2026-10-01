@@ -18,7 +18,7 @@ ALEXA   : Not quite - you said the chloroplasts. Chloroplasts capture energy fro
 ...
 ALEXA   : Question 5. Which organelle captures light energy in a plant cell?
 STUDENT : "mitochondria"
-ALEXA   : Not quite - you said the mitochondria. Let's separate those two. Which
+ALEXA   : Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which
           organelle captures light energy in a plant cell? Is it the
           chloroplasts, or the mitochondria?
 STUDENT : "chloroplasts"

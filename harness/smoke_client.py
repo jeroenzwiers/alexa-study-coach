@@ -117,7 +117,8 @@ async def main() -> None:
                 if payload.get("resolved_confusion"):
                     saw_resolution = True
                     print("          >>> OPGELOST:", " / ".join(payload["resolved_confusion"]))
-                if "separate those two" in (payload.get("speech") or "").lower():
+                # The structured field, not the phrasing - see test_diagnosis.
+                if payload.get("contrast"):
                     saw_contrast = True
                     taught = True
 

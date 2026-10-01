@@ -4,7 +4,7 @@
 | --------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | 0:00-0:15 | Opening headline, click **Run live session** | "A normal study app knows you were wrong. Study Coach knows what you confused it with."      | QUESTION                                             |
 | 0:15-0:28 | First returned question and answer card      | Student says "Chloroplasts." Coach explains the chloroplasts were reached for.               | ANSWER_RECEIVED, ATTRIBUTED_TO                       |
-| 0:28-0:45 | Mirrored target appears                      | Student says "Mitochondria." Coach says "Let's separate those two."                          | POSSIBLE_CONFUSION, CONFUSION_DETECTED               |
+| 0:28-0:45 | Mirrored target appears                      | Student says "Mitochondria." Coach says "Let's separate the chloroplasts and the mitochondria."                          | POSSIBLE_CONFUSION, CONFUSION_DETECTED               |
 | 0:45-1:00 | Contrast question with two concepts          | "Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?" | CONTRAST_PROBE                                       |
 | 1:00-1:15 | First side correct, then second side correct | Coach says "Exactly - that's the difference," then "That one's done."                        | SIDE_B_MASTERED, then SIDE_A_MASTERED, CONFUSION_RESOLVED |
 | 1:15-1:35 | Persisted progress and restart cards         | "The diagnosis is not thrown away when the session ends."                                    | PERSISTED_STATE                                      |

@@ -344,7 +344,10 @@ def main() -> int:
         if turn.resolved_confusion:
             saw_resolution = True
             print("          >>> OPGELOST:", " / ".join(turn.resolved_confusion))
-        if "separate those two" in (turn.speech or "").lower():
+        # Detect the drill by the structured field, not by the sentence. An
+        # earlier version matched the phrase "separate those two", and reworded
+        # it broke a test that had nothing to do with wording.
+        if turn.contrast:
             saw_contrast = True
             taught = True       # the contrast is what teaches the distinction
         if turn.finished:
