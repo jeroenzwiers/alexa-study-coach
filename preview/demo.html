@@ -393,8 +393,17 @@
           (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
         );
       const speech = (text) => `<p class="speech">${escapeHtml(text)}</p>`;
-      function tags(turn) {
+      // A total that jumps from 4 to 6 between two cards reads as a broken
+      // counter. It is the opposite: the server scheduled two more questions
+      // because it found a confusion worth settling. Said out loud that is the
+      // best moment in the demo, and nobody says it out loud - so the card says
+      // it, at the exact point the number changes.
+      function tags(turn, grew) {
         const out = [];
+        if (grew > 0)
+          out.push(
+            `<span class="tag strong">+${grew} questions to settle this pair</span>`,
+          );
         // The coach does not announce a number for a contrast probe - it is a
         // drill, not the next question on the list - so the spoken numbers
         // appear to jump from four to six. They do not: the server counted it
@@ -561,7 +570,16 @@
       }
       function collect(data) {
         cards = [];
+        let lastTotal = 0;
         for (const event of data.events) {
+          // Only within one session: start_practice begins a new count, and
+          // comparing a fresh session's total against the previous one's would
+          // announce growth that never happened.
+          const total = (event.turn || {}).total_questions || 0;
+          const fresh = event.kind === "start" || event.kind === "restart";
+          const grew = !fresh && lastTotal && total > lastTotal ? total - lastTotal : 0;
+          if (total) lastTotal = total;
+          if (fresh) lastTotal = total;
           if (event.kind === "protocol") {
             add(
               `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span><span class="tag good">no model on this path</span><span class="tag good">grading 11 ms median</span></div></article>`,
@@ -569,7 +587,7 @@
             );
           } else if (event.kind === "start") {
             add(
-              `<article class="event"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+              `<article class="event"><div class="label">${escapeHtml(event.state)} · start_practice</div>${speech(event.turn.speech)}${tags(event.turn, grew)}</article>`,
               event.turn.speech,
             );
           } else if (event.kind === "answer") {
@@ -579,7 +597,7 @@
             const quiet = event.state === "ANSWER_RECEIVED";
             const mute = Boolean(event.mute);
             add(
-              `<article class="event answer${quiet ? " quiet" : ""}"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn)}</article>`,
+              `<article class="event answer${quiet ? " quiet" : ""}"><div class="label">${escapeHtml(event.state)} · submit_answer · <q>${escapeHtml(event.answer)}</q></div>${speech(event.turn.speech)}${tags(event.turn, grew)}</article>`,
               mute ? "" : event.turn.speech,
               mute ? "" : event.answer,
               quiet,

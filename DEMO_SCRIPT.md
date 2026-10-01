@@ -105,7 +105,7 @@ give a longer pause:
 | `QUESTION` | question 1 of 4 |
 | `ATTRIBUTED_TO` | the first miss, tagged `attributed to The chloroplasts` - **tick one** |
 | two ordinary answers | spoken, correct, set back. Not a weak topic: one pair |
-| `CONTRAST_PROBE` | the mirror, both concepts named - **tick two**. The counter goes to 5 **of 6**: the session grew because it found something |
+| `CONTRAST_PROBE` | the mirror, both concepts named - **tick two**. The card is tagged **+2 questions to settle this pair**, and the counter goes from 4 of 4 to 5 of 6. Without that tag the jump reads as a broken counter; with it, it is the product deciding to spend two more questions on something it found |
 | `SIDE_B_MASTERED` | one side right. No resolution tag yet |
 | `SIDE_A_MASTERED · CONFUSION_RESOLVED` | both sides - **tick three**. Last card of the session; it ends on the good news |
 | two gold cards | settled for good, then "Welcome back" - the diagnosis outliving the session |
