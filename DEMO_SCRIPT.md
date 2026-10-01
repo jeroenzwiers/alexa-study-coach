@@ -5,7 +5,7 @@ it. A simulated Alexa+ experience backed by the real MCP server.
 
 **The session talks. You don't, except at the two ends.** Every card speaks -
 the questions, the wrong answers, the ordinary right ones, the persistence, the
-second subject, the class report. Nothing on screen is silent. Three earlier
+second subject. Nothing on screen is silent. Three earlier
 cuts of this script had the narrator explaining a demo that had been muted to
 make room for the explaining, which is backwards.
 
@@ -16,21 +16,35 @@ let it run.
 
 | | |
 | --- | --- |
-| the session, spoken: 29 utterances | **139 s** |
+| the session, spoken: 29 utterances | **127 s** |
 | your narration: 90 words at 150 wpm | 36 s |
-| **total** | **2:55** |
+| **total** | **2:43** |
 
 Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
 real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm you land on 2:57. Five seconds of margin, which is not much - so
-the one instruction that matters is not to dawdle, and the close is the
-punchline, so it has to be inside three minutes.
+adds them up. At 140 wpm you land on 2:45 - seventeen seconds of margin, the most this
+script has ever had. The class report came out and the second act got an ending.
 
 The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
 go back to 1.06, but that is eight seconds and you would have to drop a line.
 
 That leaves about 10 seconds. You have room for one extra sentence, not three -
 an earlier draft with 260 words of narration ran 3:11.
+
+## What is deliberately not in this video
+
+The class report - the one that aggregates confusions across everyone who
+studied a set and names which half of a distinction a group is missing. It is
+the strongest claim this project has about impact, and it is out, because the
+nine students behind it do not exist. They were seeded so the report had a
+population, the card was tagged `simulated cohort`, and the narration said
+"simulated" out loud. Three safeguards around a sentence that still sounds, to
+someone glancing up, like nine children used this.
+
+It belongs in the Devpost description instead, where there is room to say
+plainly that the mechanism is demonstrated against generated profiles.
+`harness/test_topic_map.py` proves the feature works; the video does not need to
+imply a user base.
 
 ## Before you record
 
@@ -99,16 +113,15 @@ give a longer pause:
 | one more answer | the returning session's question, answered right. It is there so the greeting does not end on a question nobody answers |
 | `SECOND SUBJECT` | black card. Computer Science Fundamentals |
 | `QUESTION` | its own opening question, as the biology act has |
-| four more | authentication against authorization, same machinery |
-| `CLASS_REPORT` | nine simulated students, and which half of the distinction is missing |
+| five more | authentication against authorization, drilled and closed the same way. The act runs its session to the end, so it stops on "that was the last one" and not on a question |
 
-The pauses that are worth holding: after `CONFUSION_RESOLVED`, and after the
-class report before you speak the close.
+The pauses that are worth holding: after each `CONFUSION_RESOLVED`, and after
+the last card before you speak the close.
 
 The server settles the chloroplasts side first, so `SIDE_B_MASTERED` appears
 before `SIDE_A_MASTERED`. Deterministic, but not alphabetical.
 
-## 2:40-2:47 - Close
+## 2:35-2:43 - Close
 
 > "A wrong answer isn't a score. It's evidence about what the student believes."
 
@@ -117,10 +130,8 @@ before `SIDE_A_MASTERED`. Deterministic, but not alphabetical.
 There is room for about one more sentence, not three. In order of what I would
 spend it on:
 
-1. Over the class report, if the card has not already made it land:
-   "Not just *that* they confuse them - which half of the distinction is
-   missing."
-2. Over the first miss: "Attribution over a closed set of answers, not a
+1. Over the first miss: "Attribution over a closed set of answers, not a
    similarity score."
 
-Adding both puts you at 3:01, so pick one.
+That line is already in the script at 0:45; this is where it would go if you
+cut it and changed your mind.
