@@ -17,12 +17,14 @@ let it run.
 | | |
 | --- | --- |
 | the session, spoken: 29 utterances | **139 s** |
-| your narration: 83 words at 150 wpm | 33 s |
-| **total** | **2:52** |
+| your narration: 90 words at 150 wpm | 36 s |
+| **total** | **2:55** |
 
 Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
 real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm you land on 2:54. Eight seconds of margin, so do not dawdle.
+adds them up. At 140 wpm you land on 2:57. Five seconds of margin, which is not much - so
+the one instruction that matters is not to dawdle, and the close is the
+punchline, so it has to be inside three minutes.
 
 The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
 go back to 1.06, but that is eight seconds and you would have to drop a line.
@@ -63,22 +65,30 @@ reciting them.
 > "You can't. A score says how much a student got wrong. It says nothing about
 > what they misunderstood."
 >
-> "Study Coach revises out loud with a student. It records **which idea they
-> reached for instead**."
+> "Study Coach records **which idea they reached for instead**."
 >
 > "Three things to watch for. The word *attributed*. A question that was
 > **chosen**, not shuffled. And a confusion being **closed**."
 
 Click **Run live session**, and stop talking.
 
-## 0:38-2:40 - The session, which speaks for itself
+## 0:45 - One line, over the first miss
 
-Press space between cards. Say nothing. What is happening, so you know where to
+This is the only place you speak during the session, and it is the sentence that
+makes the difference between a nice feature and the idea the project is built
+on. Let the coach finish, then:
+
+> "Attributed - not marked wrong. A closed set of answers, not a similarity
+> score."
+
+## 0:38-2:40 - The session, otherwise speaking for itself
+
+Press space between cards. Say nothing else. What is happening, so you know where to
 give a longer pause:
 
 | card | what lands |
 | --- | --- |
-| `MCP CONNECTION` | protocol 2025-11-25, Streamable HTTP, eight tools |
+| `MCP CONNECTION` | protocol 2025-11-25, Streamable HTTP, eight tools, **no model on this path**, **grading 11 ms median** - the technical claim, carried by tags rather than by you |
 | `QUESTION` | question 1 of 4 |
 | `ATTRIBUTED_TO` | the first miss, tagged `attributed to The chloroplasts` - **tick one** |
 | two ordinary answers | spoken, correct, set back. Not a weak topic: one pair |

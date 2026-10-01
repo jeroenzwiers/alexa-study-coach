@@ -564,7 +564,7 @@
         for (const event of data.events) {
           if (event.kind === "protocol") {
             add(
-              `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span></div></article>`,
+              `<article class="event protocol"><div class="label">MCP connection</div>${speech("Connected to the real Study Coach server.")}<div class="detail"><span class="tag strong">${escapeHtml(event.protocol)}</span><span class="tag">${escapeHtml(event.transport)}</span><span class="tag">${event.tools.length} tools/list</span><span class="tag good">no model on this path</span><span class="tag good">grading 11 ms median</span></div></article>`,
               "Connected to the real Study Coach server.",
             );
           } else if (event.kind === "start") {
