@@ -138,12 +138,27 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
     # in the voice track both.
     events.append({"kind": "start", "state": "QUESTION", "turn": turn})
 
+    # Every coach line ends by asking the next question, so an act that stops
+    # part way always stops on a question nobody answers. This one runs to the
+    # end of its session: the pair is drilled from both sides and closed, the
+    # same shape biology has, and the last line is "that was the last one".
+    CS_CORRECT = {CS_IDENTITY: "authentication", CS_PERMISSION: "authorization"}
+
+    def answer_for(question: str, after_contrast: bool) -> str:
+        lowered = question.lower()
+        if after_contrast:
+            for cue, right in CS_CORRECT.items():
+                if cue in lowered:
+                    return right
+        return cs_answer(question, False)
+
     mirrored = False
+    contrast_seen = False
     for _ in range(24):
         if turn.get("finished"):
             break
         asked = turn.get("question", "")
-        answer = cs_answer(asked, mirrored)
+        answer = answer_for(asked, contrast_seen)
         result = await client.call_tool(
             "submit_answer", {"session_id": turn["session_id"], "response": answer}
         )
@@ -153,15 +168,15 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
         # the ordinary ones quietly, and they keep the question numbering whole
         # - the same reason the biology act shows all of its cards.
         state = "ANSWER_RECEIVED"
-        if CS_IDENTITY in lowered:
+        if turn.get("resolved_confusion"):
+            state = "SIDE_A_MASTERED · CONFUSION_RESOLVED"
+        elif contrast_seen and turn.get("verdict") == "correct":
+            state = "SIDE_B_MASTERED"
+        elif CS_IDENTITY in lowered and not contrast_seen:
             mirrored = True
             state = "ANSWER_RECEIVED · ATTRIBUTED_TO"
-        elif CS_PERMISSION in lowered:
-            state = (
-                "CONFUSION_DETECTED · CONTRAST_PROBE"
-                if turn.get("contrast")
-                else "ANSWER_RECEIVED · ATTRIBUTED_TO"
-            )
+        elif CS_PERMISSION in lowered and turn.get("contrast"):
+            state = "CONFUSION_DETECTED · CONTRAST_PROBE"
         events.append({
             "kind": "answer",
             "state": state,
@@ -170,7 +185,7 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
             "turn": turn,
         })
         if CS_PERMISSION in lowered and turn.get("contrast"):
-            return
+            contrast_seen = True
 
 
 # A session of four. The arc needs six turns - the miss, the deferred mirror,
@@ -284,21 +299,6 @@ async def run_demo() -> dict:
             })
 
             await run_cs_cutin(client, events)
-
-            # The third act. The same confusions, summed over everyone who
-            # studied the set, stop being a fact about one student. The
-            # population is seeded by preview/seed_class.py and is fabricated;
-            # the narration says so, and the synthetic runs above are excluded
-            # from it by history.is_synthetic rather than by hoping.
-            report = await client.call_tool("class_report", {"study_set_id": "biology_cells"})
-            events.append({
-                "kind": "class",
-                "state": "CLASS_REPORT · SIMULATED COHORT",
-                "text": next(
-                    (b.text for b in report.content if getattr(b, "type", None) == "text"),
-                    "",
-                ),
-            })
 
     return {"events": events, "mcp_url": MCP_URL}
 
