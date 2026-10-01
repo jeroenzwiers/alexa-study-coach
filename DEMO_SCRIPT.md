@@ -16,13 +16,13 @@ let it run.
 
 | | |
 | --- | --- |
-| the session, spoken: 28 utterances | **133 s** |
+| the session, spoken: 29 utterances | **139 s** |
 | your narration: 83 words at 150 wpm | 33 s |
-| **total** | **2:46** |
+| **total** | **2:52** |
 
 Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
 real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm you land on 2:48.
+adds them up. At 140 wpm you land on 2:54. Eight seconds of margin, so do not dawdle.
 
 The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
 go back to 1.06, but that is eight seconds and you would have to drop a line.
@@ -88,7 +88,8 @@ give a longer pause:
 | two gold cards | settled for good, then "Welcome back" - the diagnosis outliving the session |
 | one more answer | the returning session's question, answered right. It is there so the greeting does not end on a question nobody answers |
 | `SECOND SUBJECT` | black card. Computer Science Fundamentals |
-| two more | authentication against authorization, same machinery |
+| `QUESTION` | its own opening question, as the biology act has |
+| four more | authentication against authorization, same machinery |
 | `CLASS_REPORT` | nine simulated students, and which half of the distinction is missing |
 
 The pauses that are worth holding: after `CONFUSION_RESOLVED`, and after the

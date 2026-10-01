@@ -133,6 +133,10 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
         "title": "Computer Science Fundamentals",
         "text": "Same server, same machinery, a different subject.",
     })
+    # The opening question, as its own card, exactly as the biology act has one.
+    # Without it the first answer arrives with nothing to answer - on screen and
+    # in the voice track both.
+    events.append({"kind": "start", "state": "QUESTION", "turn": turn})
 
     mirrored = False
     for _ in range(24):
