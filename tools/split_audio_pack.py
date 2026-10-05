@@ -9,11 +9,12 @@ names each piece with the hash the page will look for.
     python tools/split_audio_pack.py                 # all three roles
     python tools/split_audio_pack.py narrator        # just one
 
-It refuses to write anything if a role does not split into exactly the number
-of lines the manifest expects, and says what it found instead - a silent gap
-missed or invented would shift every clip after it onto the wrong sentence,
-which is worse than not splitting at all. If that happens, raise --gap (the
-engine paused less than expected) or lower it.
+Splitting on silence alone does not work: on a real ElevenLabs render the
+pauses inside a sentence were 0.40-0.46 s and the pauses between lines
+0.46-0.57 s, so no threshold separates them. Instead the audio is cut finely and
+the pieces are grouped by how long each line ought to take, from its word count.
+A line twice as long as its neighbour takes about twice as long to say, and that
+places every boundary without having to classify a single gap.
 """
 
 from __future__ import annotations
@@ -88,6 +89,56 @@ def cut_points(path: pathlib.Path, gap: float, floor: int) -> list[tuple[float, 
     return spans
 
 
+def group_segments(spans: list[tuple[float, float]], weights: list[int]) -> list[tuple[float, float]] | None:
+    """Merge consecutive speech segments into one group per line.
+
+    Thresholding the gaps cannot work here: on a real ElevenLabs render the
+    pauses inside a sentence measured 0.40 to 0.46 s and the pauses between
+    lines 0.46 to 0.57 s. The classes overlap, so no value of --gap separates
+    them - which is the same shape as the problem this project exists to solve.
+
+    So the gaps are not classified at all. The segments are cut finely, and then
+    grouped by what the text says each line should weigh: the split that gets
+    the group durations closest to the word proportions wins. A line twice as
+    long as its neighbour should take about twice as long to say, and that is
+    enough to place every boundary.
+    """
+    if len(spans) < len(weights):
+        return None
+    if len(spans) == len(weights):
+        return spans
+
+    total = sum(e - b for b, e in spans)
+    share = [w / sum(weights) for w in weights]
+    n, k = len(spans), len(weights)
+    best: dict[tuple[int, int], tuple[float, list[int]]] = {}
+
+    def solve(start: int, line: int) -> tuple[float, list[int]]:
+        if line == k - 1:
+            length = sum(spans[i][1] - spans[i][0] for i in range(start, n))
+            return ((length / total - share[line]) ** 2, [n])
+        key = (start, line)
+        if key in best:
+            return best[key]
+        winner = (float("inf"), [])
+        # Leave room for one segment per remaining line.
+        for end in range(start + 1, n - (k - line - 1) + 1):
+            length = sum(spans[i][1] - spans[i][0] for i in range(start, end))
+            cost = (length / total - share[line]) ** 2
+            rest_cost, rest = solve(end, line + 1)
+            if cost + rest_cost < winner[0]:
+                winner = (cost + rest_cost, [end] + rest)
+        best[key] = winner
+        return winner
+
+    _, cuts = solve(0, 0)
+    groups, start = [], 0
+    for end in cuts:
+        groups.append((spans[start][0], spans[end - 1][1]))
+        start = end
+    return groups
+
+
 def split(role: str, manifest: list[dict], gap: float, floor: int) -> bool:
     source = AUDIO / f"{role}.mp3"
     if not source.exists():
@@ -95,12 +146,14 @@ def split(role: str, manifest: list[dict], gap: float, floor: int) -> bool:
         return True
 
     wanted = [m for m in manifest if m["role"] == role]
-    spans = cut_points(source, gap, floor)
-    if len(spans) != len(wanted):
-        print(f"  {role:9} FOUND {len(spans)} pieces, EXPECTED {len(wanted)} - nothing written")
-        print(f"            try --gap {gap / 2:.2f} if the engine paused less,"
-              f" or --gap {gap * 1.5:.2f} if it pauses inside sentences")
+    found = cut_points(source, gap, floor)
+    spans = group_segments(found, [len(m["text"].split()) for m in wanted])
+    if spans is None:
+        print(f"  {role:9} FOUND {len(found)} pieces, NEED at least {len(wanted)} - nothing written")
+        print(f"            the engine ran the lines together; try --gap {gap / 2:.2f}")
         return False
+    if len(found) != len(wanted):
+        print(f"  {role:9} {len(found)} pieces grouped into {len(wanted)} lines by expected length")
 
     for span, entry in zip(spans, wanted):
         begin, end = span
@@ -118,8 +171,9 @@ def split(role: str, manifest: list[dict], gap: float, floor: int) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("roles", nargs="*", default=None)
-    parser.add_argument("--gap", type=float, default=0.45,
-                        help="seconds of quiet that counts as a break between lines")
+    parser.add_argument("--gap", type=float, default=0.30,
+                        help="shortest quiet stretch to cut at; finer is better, "
+                             "since the grouping puts the pieces back together")
     parser.add_argument("--floor", type=int, default=-40,
                         help="dB below which audio counts as quiet")
     args = parser.parse_args()
