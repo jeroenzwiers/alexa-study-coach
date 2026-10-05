@@ -1,6 +1,6 @@
 # Study Coach Golden Demo Script
 
-**Target runtime:** 2:42. Hard limit 3:00 - judges are not required to watch past
+**Target runtime:** about 2:50, measured 2:48 on the 1 October take. Hard limit 3:00 - judges are not required to watch past
 it. A simulated Alexa+ experience backed by the real MCP server.
 
 **The session talks. You don't, except at the two ends.** Every card speaks -
@@ -12,25 +12,23 @@ make room for the explaining, which is backwards.
 So your job is the opening and the close. In between you press the space bar and
 let it run.
 
-## The arithmetic
+## The runtime, and how much to trust the number
 
-| | |
-| --- | --- |
-| the session, spoken: 29 utterances | **127 s** |
-| your narration: 88 words at 150 wpm | 35 s |
-| **total** | **2:42** |
+**Recorded take, 1 October: 2:48.** That is the only measured figure, and it was
+with the narration read aloud live. The narration is now spoken by a third
+synthesised voice at rate 1.06, saying the same 88 words, so expect something
+close to it - but record once and check before you rely on it.
 
-Measured, not estimated: `harness/test_demo_browser.mjs` drives the page in a
-real browser, records every utterance with the time real speech would take, and
-adds them up. At 140 wpm it is 2:45 and at 130 wpm 2:48, so the margin holds
-even at a slow delivery - which no earlier draft of this script managed.
+`harness/test_demo_browser.mjs` reports a duration per utterance. It is
+**modelled**, not heard: words divided by the speaking rate. It is good for
+telling whether a change made things longer or shorter, and it is not the
+runtime of the video. An earlier version of this file quoted 2:42 from that
+model, and from a run the harness had truncated before the second act finished.
+Both are fixed; neither number was ever real.
 
-The voices run at rate 1.13, which is brisk. If it sounds hurried to you it can
-go back to 1.06, but that is eight seconds and you would have to drop a line.
-
-Earlier drafts ran 2:59, 3:11 and 4:03. The narration is 88 words because the
-session says the rest, and because a checklist already on the screen does not
-need reading aloud.
+What the harness does measure reliably: 37 utterances in the right order, no
+card without a voice, no student answer without a question before it, all three
+promises ticking, console clean.
 
 ## What is deliberately not in this video
 

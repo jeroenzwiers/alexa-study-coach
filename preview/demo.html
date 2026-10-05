@@ -343,12 +343,20 @@
             Step with the space bar
           </label>
           <label class="voice-row">
+            <input id="narrate-on" type="checkbox" checked />
+            Speak the narration too
+          </label>
+          <label class="voice-row">
             coach
             <select id="voice" aria-label="Coach voice"></select>
           </label>
           <label class="voice-row">
             student
             <select id="voice-student" aria-label="Student voice"></select>
+          </label>
+          <label class="voice-row">
+            narrator
+            <select id="voice-narrator" aria-label="Narrator voice"></select>
           </label>
         </div>
       </header>
@@ -438,12 +446,27 @@
       const voiceOn = document.querySelector("#voice-on");
       const voicePicker = document.querySelector("#voice");
       const studentPicker = document.querySelector("#voice-student");
+      const narratorPicker = document.querySelector("#voice-narrator");
+      const narrateOn = document.querySelector("#narrate-on");
       const synth = window.speechSynthesis;
 
       // The student is pitched up and the coach is not, so the two are told
       // apart by ear even when the machine has only one installed voice - which
       // is the common case on Windows without Edge. Choosing two different
       // voices in the pickers works too, and sounds better.
+      // The narration, so the whole soundtrack is system audio and no microphone
+      // is involved. Word for word from DEMO_SCRIPT.md; `pause` is the beat
+      // after a line, in milliseconds.
+      const OPENING = [
+        { text: "A score tells you a student got it wrong. It can't tell you what they believe.", pause: 900 },
+        { text: "Study Coach records which idea they reached for instead.", pause: 600 },
+        { text: "That's harder than it sounds. On spoken answers the worst correct one scores lower than the best wrong one. There is no similarity threshold to draw.", pause: 600 },
+        { text: "So it doesn't measure similarity. It asks which of this deck's answers the student actually said. Eleven milliseconds, and no model in the loop.", pause: 900 },
+      ];
+      const CLOSE = [
+        { text: "A wrong answer isn't a score. It's evidence about what the student believes.", pause: 0 },
+      ];
+      const NARRATOR = { pitch: 1.0, rate: 1.06 };
       const COACH = { pitch: 0.95, rate: 1.13 };
       const STUDENT = { pitch: 1.45, rate: 1.16 };
 
@@ -488,7 +511,7 @@
       function fillVoices() {
         const voices = englishVoices();
         if (!voices.length) {
-          for (const picker of [voicePicker, studentPicker]) {
+          for (const picker of [voicePicker, studentPicker, narratorPicker]) {
             picker.innerHTML = "<option>no English voice available</option>";
             picker.disabled = true;
           }
@@ -498,12 +521,14 @@
         }
         voicePicker.disabled = false;
         studentPicker.disabled = false;
+        narratorPicker.disabled = false;
         voiceOn.disabled = false;
         if (!voiceChosenByHand) voiceOn.checked = true;
         fillOne(voicePicker, voices, 0);
         // Index 1 when there is a second voice, so two installed voices are
         // used by default rather than waiting to be asked for.
         fillOne(studentPicker, voices, 1);
+        fillOne(narratorPicker, voices, 0);
       }
       fillVoices();
       if (synth) synth.addEventListener("voiceschanged", fillVoices);
@@ -528,6 +553,14 @@
           utterance.onerror = resolve;
           synth.speak(utterance);
         });
+      }
+
+      async function narrate(block) {
+        if (!speaking() || !narrateOn.checked) return;
+        for (const line of block) {
+          await say(line.text, narratorPicker, NARRATOR);
+          if (line.pause) await wait(line.pause);
+        }
       }
 
       let cards = [];
@@ -691,7 +724,6 @@
       run.addEventListener("click", async () => {
         run.disabled = true;
         if (synth) synth.cancel();
-        promise.classList.add("pinned");
         for (const item of promise.querySelectorAll("li")) {
           item.classList.remove("met");
           const tick = item.querySelector(".tick");
@@ -705,8 +737,17 @@
           if (!response.ok) throw new Error(data.error || "MCP call failed");
           collect(data);
           const idle = `Complete · ${data.mcp_url}`;
+          // The opening is spoken over the panel, before a single card appears -
+          // the same hold the script asks for, without anyone holding it.
+          status.textContent = "Narration...";
+          await narrate(OPENING);
+          // The panel stays full size under the narration and only shrinks to
+          // the sticky strip once cards start arriving.
+          promise.classList.add("pinned");
           status.textContent = idle;
           await play(idle);
+          await wait(900);
+          await narrate(CLOSE);
         } catch (error) {
           status.textContent = `Could not reach MCP server: ${error.message}`;
         } finally {

@@ -7,7 +7,10 @@
 // by watching.
 //
 // It replaces speech synthesis with a recorder, so every utterance is captured
-// with its voice, pitch, rate and the time real speech would have taken. It
+// with its voice, pitch and rate. The per-utterance duration it reports is
+// MODELLED - words divided by rate - not heard. Use it to compare one change
+// against another, never as the runtime of the video: only a real recording
+// gives that, and the real voices are faster than the model. It
 // then checks the things that broke before: that no card is silent, that the
 // question counter never jumps, that the three promises tick over, and that
 // the console is clean. Screenshots are written alongside for the things only
@@ -109,7 +112,18 @@ await page.waitForFunction(
   () => document.querySelectorAll('#timeline .event').length >= 15,
   { timeout: 90000 },
 );
-await new Promise((r) => setTimeout(r, 3000));
+// Wait until speech actually stops rather than guessing. The closing narration
+// comes after the last card, and a fixed wait captured the run just before it.
+await page.waitForFunction(
+  () => {
+    const n = window.__speech.length;
+    if (window.__lastCount === n) return (window.__still = (window.__still || 0) + 1) > 6;
+    window.__lastCount = n;
+    window.__still = 0;
+    return false;
+  },
+  { timeout: 60000, polling: 300 },
+);
 
 const after = await page.evaluate(() => ({
   speech: window.__speech,
