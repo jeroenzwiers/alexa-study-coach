@@ -16,3 +16,10 @@ data/
 node_modules/
 package-lock.json
 preview/audio/*.mp3
+
+preview/study-coach-demo.mp4
+preview/recording.webm
+preview/frames/
+preview/frames.txt
+preview/timeline.json
+preview/audio-track.m4a
