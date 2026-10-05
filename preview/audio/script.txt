@@ -36,11 +36,11 @@ Let's revise The Cell. Question 1. Which organelle releases energy from glucose?
 [08] 34aaacad.mp3
 Not quite - you said the chloroplasts. Chloroplasts capture energy from light; mitochondria release it from food. The answer is The mitochondria. Question 2. Which part of a plant cell stores cell sap and keeps the cell firm?
 
-[10] 1b792a30.mp3
-That's right - the vacuole. Question 3. Where do most of the cell's chemical reactions take place?
+[10] 0cbaced9.mp3
+That's right. Question 3. Where do most of the cell's chemical reactions take place?
 
-[12] 114b8258.mp3
-That's right - in the cytoplasm. Question 4. Which organelle captures light energy in a plant cell?
+[12] 808bc445.mp3
+That's right. Question 4. Which organelle captures light energy in a plant cell?
 
 [14] 9af8eba4.mp3
 Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?
@@ -60,11 +60,11 @@ Let's revise Computer Science Fundamentals. Question 1. What process verifies th
 [22] 8db7ad0f.mp3
 Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. Which memory area stores dynamically allocated objects during a program's lifetime?
 
-[24] 7d4ba14f.mp3
-That's right - the heap. Question 3. What structure stores recently used data so future access can be faster?
+[24] e8786465.mp3
+That's right. Question 3. What structure stores recently used data so future access can be faster?
 
-[26] bf13355a.mp3
-That's right - a cache. Question 4. What process decides which actions an authenticated user may perform?
+[26] d926e524.mp3
+That's right. Question 4. What process decides which actions an authenticated user may perform?
 
 [28] 9ef16bcb.mp3
 Not quite - you said authentication. Let's separate authorization and authentication. What process decides which actions an authenticated user may perform? Is it authorization, or authentication?

@@ -572,6 +572,21 @@
         }
         return h.toString(16).padStart(8, "0");
       }
+      // A coach line closes the previous turn and opens the next in one breath:
+      // "That's right. Question 3. Where do most of the cell's chemical
+      // reactions take place?" Spoken as one utterance the verdict ends up
+      // against the question that follows it rather than the answer it judges,
+      // and from the third question on - where the verdicts stop being "not
+      // quite" - the session sounds like it is approving of a question nobody
+      // has answered. Split in two, with a beat between, the verdict stays with
+      // the answer it belongs to.
+      const QUESTION_START = /\s(?=Question \d+\.)/;
+      function halves(text) {
+        const at = String(text || "").search(QUESTION_START);
+        if (at < 0) return [text, ""];
+        return [text.slice(0, at), text.slice(at + 1)];
+      }
+
       const missingClips = new Set();
       function playClip(text) {
         const key = audioKey(text);
@@ -606,6 +621,16 @@
       async function say(text, picker, style) {
         if (speaking() && text && (await playClip(text))) return;
         return sayWithVoice(text, picker, style);
+      }
+
+      // Says a coach line as its two halves where it has two, with a pause
+      // between them. Falls back to the whole line when no clip was cut.
+      async function sayCoachLine(text) {
+        const [verdict, question] = halves(text);
+        if (!question) return say(text, voicePicker, COACH);
+        if (!(await playClip(verdict))) return say(text, voicePicker, COACH);
+        await wait(700);
+        await say(question, voicePicker, COACH);
       }
 
       function sayWithVoice(text, picker, style) {
@@ -791,7 +816,7 @@
               await say(card.question, voicePicker, COACH);
               await wait(250);
             }
-            await say(card.spoken, voicePicker, COACH);
+            await sayCoachLine(card.spoken);
             node.classList.remove("speaking");
             spokenLast = true;
           } else {

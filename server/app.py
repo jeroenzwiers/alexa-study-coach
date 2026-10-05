@@ -211,13 +211,7 @@ def submit_answer(session_id: str, response: str, manner: str | None = None) -> 
         elif was_contrast:
             feedback = "Exactly - that's the difference."
         else:
-            # Name what was right. One utterance has to close the previous turn
-            # and open the next - "That's right. Question 3. Where do most of
-            # the cell's chemical reactions take place?" - and a bare "That's
-            # right" then sits against the question that FOLLOWS it rather than
-            # the answer it judges. Repeating the answer binds it backwards,
-            # which is also what a tutor does out loud.
-            feedback = f"That's right - {_spoken(card.canonical)}."
+            feedback = "That's right."
     else:
         session.correct_streak = 0
         session.wrong_streak += 1
