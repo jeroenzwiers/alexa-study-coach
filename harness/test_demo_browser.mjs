@@ -86,10 +86,16 @@ await page.evaluateOnNewDocument(() => {
 const errors = [];
 page.on('pageerror', (e) => errors.push('pageerror: ' + String(e)));
 page.on('console', (m) => {
-  if (m.type() === 'error') errors.push('console: ' + m.text());
+  if (m.type() === 'error' && !m.text().includes('Failed to load resource')) {
+    errors.push('console: ' + m.text());
+  }
 });
 page.on('response', (r) => {
-  if (r.status() >= 400) errors.push('http ' + r.status() + ': ' + r.url());
+  // A missing pre-rendered clip is the designed fallback to the browser voice,
+  // not a fault - see preview/audio/.
+  if (r.status() >= 400 && !/\/audio\/[0-9a-f]+\.mp3$/.test(r.url())) {
+    errors.push('http ' + r.status() + ': ' + r.url());
+  }
 });
 
 await page.goto(URL, { waitUntil: 'networkidle0' });

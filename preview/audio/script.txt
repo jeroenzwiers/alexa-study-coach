@@ -1,0 +1,114 @@
+Every line the demo speaks, grouped by who says it.
+Render each one and save it as preview/audio/<file>.
+
+======================================================================
+NARRATOR - 5 lines
+======================================================================
+
+[01] 81f600c5.mp3
+A score tells you a student got it wrong. It can't tell you what they believe.
+
+[02] cb1fe427.mp3
+Study Coach records which idea they reached for instead.
+
+[03] d89fc7af.mp3
+That's harder than it sounds. On spoken answers the worst correct one scores lower than the best wrong one. There is no similarity threshold to draw.
+
+[04] 7235a88a.mp3
+So it doesn't measure similarity. It asks which of this deck's answers the student actually said. Eleven milliseconds, and no model in the loop.
+
+[33] 192ee5db.mp3
+A wrong answer isn't a score. It's evidence about what the student believes.
+
+======================================================================
+COACH - 16 lines
+======================================================================
+
+[05] e7a02826.mp3
+Connected to the real Study Coach server.
+
+[06] b37c9cd3.mp3
+Let's revise The Cell. Question 1. Which organelle releases energy from glucose?
+
+[08] 596c2408.mp3
+Not quite - you said the chloroplasts. Chloroplasts capture energy from light; mitochondria release it from food. The answer is The mitochondria. Question 2. Where is the genetic material of a cell found?
+
+[10] 5acd09f1.mp3
+That's right. Question 3. Which structure gives a plant cell its shape and support?
+
+[12] 808bc445.mp3
+That's right. Question 4. Which organelle captures light energy in a plant cell?
+
+[14] 9af8eba4.mp3
+Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?
+
+[16] a84506fe.mp3
+Exactly - that's the difference. Question 6. Which organelle releases energy from glucose?
+
+[18] efce4868.mp3
+Yes - and that's the pair sorted. You had the chloroplasts and the mitochondria the wrong way round twice tonight, and you've just had them both right. That one's done. That was the last one. You got 4 out of 6. And you settled 1 confusion on the way.
+
+[19] fb60e56c.mp3
+Same server, same machinery, a different subject.
+
+[20] ac0bd23c.mp3
+Let's revise Computer Science Fundamentals. Question 1. What process verifies that a user is who they claim to be?
+
+[22] 89a9178c.mp3
+Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. What system organizes and stores data for durable retrieval and updates?
+
+[24] a0b0140e.mp3
+That's right. Question 3. Which memory area follows last in, first out order for function calls?
+
+[26] d926e524.mp3
+That's right. Question 4. What process decides which actions an authenticated user may perform?
+
+[28] 9ef16bcb.mp3
+Not quite - you said authentication. Let's separate authorization and authentication. What process decides which actions an authenticated user may perform? Is it authorization, or authentication?
+
+[30] 1d62c15b.mp3
+Exactly - that's the difference. Question 6. What process verifies that a user is who they claim to be?
+
+[32] b44552b2.mp3
+Yes - and that's the pair sorted. You had authorization and authentication the wrong way round twice tonight, and you've just had them both right. That one's done. That was the last one. You got 4 out of 6. And you settled 1 confusion on the way.
+
+======================================================================
+STUDENT - 12 lines
+======================================================================
+
+[07] 72c35795.mp3
+chloroplasts
+
+[09] 691067e2.mp3
+nucleus
+
+[11] 897a250b.mp3
+cell wall
+
+[13] 91c3a4a0.mp3
+mitochondria
+
+[15] 72c35795.mp3
+chloroplasts
+
+[17] 568d1b09.mp3
+the mitochondria
+
+[21] 913657be.mp3
+authorization
+
+[23] ce445739.mp3
+a database
+
+[25] 6583b69c.mp3
+the stack
+
+[27] 9afb0a61.mp3
+authentication
+
+[29] 913657be.mp3
+authorization
+
+[31] 9afb0a61.mp3
+authentication
+

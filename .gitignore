@@ -15,3 +15,4 @@ data/
 # Optional browser harness only - see harness/test_demo_browser.mjs
 node_modules/
 package-lock.json
+preview/audio/*.mp3

@@ -10,7 +10,7 @@ import uuid
 import anyio
 from mcp.client.session import ClientSession
 from starlette.applications import Starlette
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from starlette.routing import Route
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -328,8 +328,25 @@ async def demo(request) -> JSONResponse:
         return JSONResponse({"error": str(exc)}, status_code=502)
 
 
+async def clip(request) -> Response:
+    """A pre-rendered line, if one has been put there.
+
+    The page asks for audio/<hash>.mp3 and falls back to the browser voice on a
+    404, so an empty directory changes nothing. The hash is of the sentence
+    itself - see tools/dump_demo_speech.mjs, which writes the list to record.
+    """
+    name = request.path_params["name"]
+    if not name.replace("-", "").isalnum():
+        return Response(status_code=404)
+    path = ROOT / "preview" / "audio" / f"{name}.mp3"
+    if not path.exists():
+        return Response(status_code=404)
+    return FileResponse(path, media_type="audio/mpeg")
+
+
 app = Starlette(routes=[
     Route("/", index),
+    Route("/audio/{name}.mp3", clip),
     Route("/api/demo", demo, methods=["POST"]),
 ])
 

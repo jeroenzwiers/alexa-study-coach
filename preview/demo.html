@@ -559,7 +559,43 @@
       const speaking = () => Boolean(synth) && voiceOn.checked && !voicePicker.disabled;
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-      function say(text, picker, style) {
+      // A pre-rendered clip is used when one exists for this exact sentence, and
+      // the browser voice is the fallback. The key is a hash of the text, so a
+      // clip stays matched to its line however the session reorders itself, and
+      // a line that changes simply falls back instead of playing the wrong
+      // audio.
+      function audioKey(text) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < text.length; i += 1) {
+          h ^= text.charCodeAt(i);
+          h = Math.imul(h, 0x01000193) >>> 0;
+        }
+        return h.toString(16).padStart(8, "0");
+      }
+      const missingClips = new Set();
+      function playClip(text) {
+        const key = audioKey(text);
+        if (missingClips.has(key)) return Promise.resolve(false);
+        return new Promise((resolve) => {
+          const audio = new Audio(`audio/${key}.mp3`);
+          audio.addEventListener("ended", () => resolve(true));
+          audio.addEventListener("error", () => {
+            missingClips.add(key);
+            resolve(false);
+          });
+          audio.play().catch(() => {
+            missingClips.add(key);
+            resolve(false);
+          });
+        });
+      }
+
+      async function say(text, picker, style) {
+        if (speaking() && text && (await playClip(text))) return;
+        return sayWithVoice(text, picker, style);
+      }
+
+      function sayWithVoice(text, picker, style) {
         return new Promise((resolve) => {
           if (!speaking() || !text) return resolve();
           const utterance = new SpeechSynthesisUtterance(text);
@@ -568,6 +604,7 @@
             utterance.voice = voice;
             utterance.lang = voice.lang;
           }
+          utterance.__key = audioKey(text);
           utterance.pitch = style.pitch;
           utterance.rate = style.rate;
           // Resolve on error as well. A voice that refuses to start must not
