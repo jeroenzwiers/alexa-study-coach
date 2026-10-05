@@ -458,17 +458,17 @@
       // is involved. Word for word from DEMO_SCRIPT.md; `pause` is the beat
       // after a line, in milliseconds.
       const OPENING = [
-        { text: "A score tells you a student got it wrong. It can't tell you what they believe.", pause: 900 },
-        { text: "Study Coach records which idea they reached for instead.", pause: 600 },
-        { text: "That's harder than it sounds. On spoken answers the worst correct one scores lower than the best wrong one. There is no similarity threshold to draw.", pause: 600 },
-        { text: "So it doesn't measure similarity. It asks which of this deck's answers the student actually said. Eleven milliseconds, and no model in the loop.", pause: 900 },
+        { text: "A score tells you a student got it wrong. It can't tell you what they believe.", pause: 420 },
+        { text: "Study Coach records which idea they reached for instead.", pause: 420 },
+        { text: "That's harder than it sounds. On spoken answers the worst correct one scores lower than the best wrong one. There is no similarity threshold to draw.", pause: 420 },
+        { text: "So it doesn't measure similarity. It asks which of this deck's answers the student actually said. Eleven milliseconds, and no model in the loop.", pause: 420 },
       ];
       const CLOSE = [
         { text: "A wrong answer isn't a score. It's evidence about what the student believes.", pause: 0 },
       ];
-      const NARRATOR = { pitch: 1.0, rate: 1.06 };
-      const COACH = { pitch: 0.95, rate: 1.13 };
-      const STUDENT = { pitch: 1.45, rate: 1.16 };
+      const NARRATOR = { pitch: 0.96, rate: 1.14 };
+      const COACH = { pitch: 1.0, rate: 1.22 };
+      const STUDENT = { pitch: 1.12, rate: 1.25 };
 
       // Edge exposes online neural voices next to the dated local ones. On a
       // machine whose only installed voice is "Microsoft Zira Desktop", which
@@ -528,7 +528,10 @@
         // Index 1 when there is a second voice, so two installed voices are
         // used by default rather than waiting to be asked for.
         fillOne(studentPicker, voices, 1);
-        fillOne(narratorPicker, voices, 0);
+        // A third voice where the machine has one. Defaulting the narrator to
+        // index 0 gave it the coach's voice, so the opening sounded like the
+        // app talking about itself.
+        fillOne(narratorPicker, voices, voices.length > 2 ? 2 : 1);
       }
       fillVoices();
       if (synth) synth.addEventListener("voiceschanged", fillVoices);
@@ -708,7 +711,7 @@
             // the timeline into a conversation rather than a monologue.
             if (card.answer) {
               await say(card.answer, studentPicker, STUDENT);
-              await wait(280);
+              await wait(180);
             }
             await say(card.spoken, voicePicker, COACH);
             node.classList.remove("speaking");
@@ -718,7 +721,7 @@
           }
           if (index === cards.length - 1) break;
           if (stepOn.checked && !card.quiet) await waitForStep(idle);
-          else await wait(card.quiet ? 700 : 450);
+          else await wait(card.quiet ? 420 : 280);
         }
       }
       run.addEventListener("click", async () => {
@@ -746,7 +749,7 @@
           promise.classList.add("pinned");
           status.textContent = idle;
           await play(idle);
-          await wait(900);
+          await wait(600);
           await narrate(CLOSE);
         } catch (error) {
           status.textContent = `Could not reach MCP server: ${error.message}`;
