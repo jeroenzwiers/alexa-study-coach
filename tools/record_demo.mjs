@@ -99,6 +99,33 @@ await page.evaluateOnNewDocument((clipLengths) => {
       },
     },
   });
+  // The page stamps its own changes. Timing a still by when the recorder
+  // noticed put every card about three seconds behind its own line: the poll
+  // loop cannot see a change until it next looks, and a screenshot in between
+  // costs a quarter of a second. A MutationObserver sees it as it happens, and
+  // the screenshot can then arrive whenever it likes - nothing else moved.
+  window.__changes = [];
+  const note = () => {
+    const cards = document.querySelectorAll('#timeline .event').length;
+    const ticks = document.querySelectorAll('#promise li.met').length;
+    const strip = document.querySelector('#promise');
+    const key = `${cards}:${ticks}:${strip ? strip.className : ''}`;
+    const last = window.__changes[window.__changes.length - 1];
+    if (last && last.key === key) return;
+    window.__changes.push({
+      at: window.__t0 === null ? 0 : Date.now() - window.__t0,
+      key,
+      cards,
+    });
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    note();
+    new MutationObserver(note).observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    });
+  });
   // Scrolling jumps rather than glides: a smooth scroll between two stills
   // reads as a jump cut anyway, and an instant one lands the card where it
   // belongs in the very next frame.
@@ -116,15 +143,20 @@ let index = 0;
 let previous = '';
 const t0 = Date.now();
 
-async function capture() {
-  const file = path.join(FRAMES, `f${String(index).padStart(4, '0')}.png`);
-  await page.screenshot({ path: file });
-  frames.push({ file, at: Date.now() - t0 });
+// The timestamp is taken when the change was SEEN, not when the screenshot
+// finished. A 1920x1080 png takes a second or more, and stamping afterwards put
+// every still that much late - the connection card turned up seven seconds
+// after its own line had been spoken. The picture is identical either way,
+// because nothing moved in between; only the clock reading differs.
+async function capture(at, cards) {
+  const file = path.join(FRAMES, `f${String(index).padStart(4, '0')}.jpg`);
+  frames.push({ file, at, cards });
   index += 1;
+  await page.screenshot({ path: file, type: 'jpeg', quality: 94 });
 }
 
 // The opening screen, held while the narration plays over it.
-await capture();
+await capture(0, 0);
 await page.click('#run');
 
 // A still per visible change: a card arriving, the promise strip pinning, a
@@ -132,16 +164,17 @@ await page.click('#run');
 const started = Date.now();
 let quietPolls = 0;
 while (Date.now() - started < 400000) {
+  // The page's own record of when it changed, not when this loop looked.
   const state = await page.evaluate(() => {
-    const cards = document.querySelectorAll('#timeline .event').length;
-    const ticks = document.querySelectorAll('#promise li.met').length;
-    const pinned = document.querySelector('#promise').className;
-    return `${cards}:${ticks}:${Math.round(window.scrollY / 8)}:${pinned}`;
+    const changes = window.__changes;
+    const last = changes[changes.length - 1];
+    return last ? { ...last, scroll: Math.round(window.scrollY / 8) } : null;
   });
-  if (state !== previous) {
-    previous = state;
+  const key = state && `${state.key}:${state.scroll}`;
+  if (state && key !== previous) {
+    previous = key;
     quietPolls = 0;
-    await capture();
+    await capture(state.at, state.cards);
   } else {
     quietPolls += 1;
   }
@@ -156,7 +189,7 @@ while (Date.now() - started < 400000) {
 
 // Hold the last card for a beat rather than cutting on its final syllable.
 await new Promise((r) => setTimeout(r, 1500));
-await capture();
+await capture(Date.now() - t0, 0);
 
 const timeline = await page.evaluate(() => window.__timeline);
 const spoken = await page.evaluate(() => window.__spoken);

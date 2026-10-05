@@ -763,27 +763,33 @@
         timeline.innerHTML = "";
         let spokenLast = false;
         for (const [index, card] of cards.entries()) {
-          timeline.insertAdjacentHTML("beforeend", card.html);
-          const node = timeline.lastElementChild;
-          keepPromise(card.state);
-          node.scrollIntoView({ behavior: "smooth", block: "center" });
-          if (speaking() && !card.mute) {
-            node.classList.add("speaking");
-            // Each coach line ends by asking the NEXT question, so silencing a
-            // card orphans the question the card before it just asked - you
-            // hear question two asked and the answer to question four given.
-            // When the run of speech was broken, this card asks its own
-            // question first, and the exchange is whole again.
+          const audible = speaking() && !card.mute;
+          // The student answers BEFORE their card appears. A card carries the
+          // coach's reply - "That's right. Question 3..." - so showing it first
+          // puts the verdict on screen while the answer it judges is still
+          // being spoken. The previous card stays up, the answer comes out of
+          // it, and only then does the reply arrive. That is the order the
+          // exchange happened in.
+          if (audible && card.answer) {
+            // Each coach line ends by asking the NEXT question, so a silent
+            // stretch orphans the question the card before it asked. Where the
+            // run of speech was broken, ask it again before answering.
             if (!spokenLast && card.question) {
               await say(card.question, voicePicker, COACH);
               await wait(250);
             }
-            // The student answers first, then the coach replies to it. That is
-            // the order the session actually happened in, and it is what turns
-            // the timeline into a conversation rather than a monologue.
-            if (card.answer) {
-              await say(card.answer, studentPicker, STUDENT);
-              await wait(180);
+            await say(card.answer, studentPicker, STUDENT);
+            await wait(200);
+          }
+          timeline.insertAdjacentHTML("beforeend", card.html);
+          const node = timeline.lastElementChild;
+          keepPromise(card.state);
+          node.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (audible) {
+            node.classList.add("speaking");
+            if (!card.answer && !spokenLast && card.question) {
+              await say(card.question, voicePicker, COACH);
+              await wait(250);
             }
             await say(card.spoken, voicePicker, COACH);
             node.classList.remove("speaking");
