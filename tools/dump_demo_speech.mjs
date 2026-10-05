@@ -116,8 +116,22 @@ for (const m of manifest) {
   if (!byRole.has(m.role)) byRole.set(m.role, []);
   byRole.get(m.role).push(m);
 }
-let script = 'Every line the demo speaks, grouped by who says it.\n';
-script += 'Render each one and save it as preview/audio/<file>.\n\n';
+// One file per role with nothing but the sentences, blank-line separated.
+// Paste a whole file into the engine in one go: the blank lines become
+// pauses, which is what tools/split_audio_pack.py cuts on afterwards.
+// Filenames are deliberately absent - put them in and the engine reads them
+// out loud, which is what happened the first time.
+const NL = String.fromCharCode(10);
+for (const [role, items] of byRole) {
+  const body = items.map((m) => m.text).join(NL + NL) + NL;
+  fs.writeFileSync(path.join(OUT, `lines-${role}.txt`), body);
+}
+
+let script =
+  'REFERENCE ONLY - do not paste this into a speech engine; it will read' +
+  NL + 'the filenames out loud. Paste lines-narrator.txt, lines-coach.txt' +
+  NL + 'and lines-student.txt instead, one generation each.' + NL + NL +
+  'This table is for checking which clip is which afterwards.' + NL + NL;
 for (const [role, items] of byRole) {
   script += `${'='.repeat(70)}\n${role.toUpperCase()} - ${items.length} lines\n${'='.repeat(70)}\n\n`;
   for (const m of items) {
@@ -130,3 +144,8 @@ const chars = manifest.reduce((n, m) => n + m.text.length, 0);
 console.log(`${manifest.length} lines, ${chars} characters`);
 for (const [role, items] of byRole) console.log(`  ${role}: ${items.length}`);
 console.log(`written to ${OUT}`);
+console.log('');
+console.log('Paste these three, one generation each:');
+for (const [role] of byRole) console.log(`  preview/audio/lines-${role}.txt`);
+console.log('Save the results as <role>.mp3 beside them, then:');
+console.log('  python tools/split_audio_pack.py');

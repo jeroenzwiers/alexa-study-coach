@@ -1,0 +1,9 @@
+A score tells you a student got it wrong. It can't tell you what they believe.
+
+Study Coach records which idea they reached for instead.
+
+That's harder than it sounds. On spoken answers the worst correct one scores lower than the best wrong one. There is no similarity threshold to draw.
+
+So it doesn't measure similarity. It asks which of this deck's answers the student actually said. Eleven milliseconds, and no model in the loop.
+
+A wrong answer isn't a score. It's evidence about what the student believes.
