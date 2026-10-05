@@ -36,14 +36,14 @@ Let's revise The Cell. Question 1. Which organelle releases energy from glucose?
 [08] 34aaacad.mp3
 Not quite - you said the chloroplasts. Chloroplasts capture energy from light; mitochondria release it from food. The answer is The mitochondria. Question 2. Which part of a plant cell stores cell sap and keeps the cell firm?
 
-[10] 3c69b480.mp3
-That's right. Question 3. Where is the genetic material of a cell found?
+[10] 0cbaced9.mp3
+That's right. Question 3. Where do most of the cell's chemical reactions take place?
 
 [12] 808bc445.mp3
 That's right. Question 4. Which organelle captures light energy in a plant cell?
 
-[14] a5b1e840.mp3
-Not quite - you said the mitochondria. Let's separate the mitochondria and the chloroplasts. Which organelle captures light energy in a plant cell? Is it the mitochondria, or the chloroplasts?
+[14] 9af8eba4.mp3
+Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?
 
 [16] a84506fe.mp3
 Exactly - that's the difference. Question 6. Which organelle releases energy from glucose?
@@ -57,17 +57,17 @@ Same server, same machinery, a different subject.
 [20] ac0bd23c.mp3
 Let's revise Computer Science Fundamentals. Question 1. What process verifies that a user is who they claim to be?
 
-[22] 6b5a3b0a.mp3
-Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. What structure stores recently used data so future access can be faster?
+[22] 8db7ad0f.mp3
+Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. Which memory area stores dynamically allocated objects during a program's lifetime?
 
-[24] a0b0140e.mp3
-That's right. Question 3. Which memory area follows last in, first out order for function calls?
+[24] e8786465.mp3
+That's right. Question 3. What structure stores recently used data so future access can be faster?
 
 [26] d926e524.mp3
 That's right. Question 4. What process decides which actions an authenticated user may perform?
 
-[28] 43e78bb3.mp3
-Not quite - you said authentication. Let's separate authentication and authorization. What process decides which actions an authenticated user may perform? Is it authentication, or authorization?
+[28] 9ef16bcb.mp3
+Not quite - you said authentication. Let's separate authorization and authentication. What process decides which actions an authenticated user may perform? Is it authorization, or authentication?
 
 [30] 1d62c15b.mp3
 Exactly - that's the difference. Question 6. What process verifies that a user is who they claim to be?
@@ -85,8 +85,8 @@ chloroplasts
 [09] 2b56eb89.mp3
 the vacuole
 
-[11] 691067e2.mp3
-nucleus
+[11] e222238b.mp3
+cytoplasm
 
 [13] 91c3a4a0.mp3
 mitochondria
@@ -100,11 +100,11 @@ the mitochondria
 [21] 913657be.mp3
 authorization
 
-[23] 641bf27e.mp3
-a cache
+[23] fb6dc5e2.mp3
+the heap
 
-[25] 6583b69c.mp3
-the stack
+[25] 641bf27e.mp3
+a cache
 
 [27] 9afb0a61.mp3
 authentication

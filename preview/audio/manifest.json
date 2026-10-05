@@ -64,17 +64,17 @@
   },
   {
     "order": 10,
-    "key": "3c69b480",
+    "key": "0cbaced9",
     "role": "coach",
-    "text": "That's right. Question 3. Where is the genetic material of a cell found?",
-    "file": "3c69b480.mp3"
+    "text": "That's right. Question 3. Where do most of the cell's chemical reactions take place?",
+    "file": "0cbaced9.mp3"
   },
   {
     "order": 11,
-    "key": "691067e2",
+    "key": "e222238b",
     "role": "student",
-    "text": "nucleus",
-    "file": "691067e2.mp3"
+    "text": "cytoplasm",
+    "file": "e222238b.mp3"
   },
   {
     "order": 12,
@@ -92,10 +92,10 @@
   },
   {
     "order": 14,
-    "key": "a5b1e840",
+    "key": "9af8eba4",
     "role": "coach",
-    "text": "Not quite - you said the mitochondria. Let's separate the mitochondria and the chloroplasts. Which organelle captures light energy in a plant cell? Is it the mitochondria, or the chloroplasts?",
-    "file": "a5b1e840.mp3"
+    "text": "Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?",
+    "file": "9af8eba4.mp3"
   },
   {
     "order": 15,
@@ -148,31 +148,31 @@
   },
   {
     "order": 22,
-    "key": "6b5a3b0a",
+    "key": "8db7ad0f",
     "role": "coach",
-    "text": "Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. What structure stores recently used data so future access can be faster?",
-    "file": "6b5a3b0a.mp3"
+    "text": "Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. Which memory area stores dynamically allocated objects during a program's lifetime?",
+    "file": "8db7ad0f.mp3"
   },
   {
     "order": 23,
+    "key": "fb6dc5e2",
+    "role": "student",
+    "text": "the heap",
+    "file": "fb6dc5e2.mp3"
+  },
+  {
+    "order": 24,
+    "key": "e8786465",
+    "role": "coach",
+    "text": "That's right. Question 3. What structure stores recently used data so future access can be faster?",
+    "file": "e8786465.mp3"
+  },
+  {
+    "order": 25,
     "key": "641bf27e",
     "role": "student",
     "text": "a cache",
     "file": "641bf27e.mp3"
-  },
-  {
-    "order": 24,
-    "key": "a0b0140e",
-    "role": "coach",
-    "text": "That's right. Question 3. Which memory area follows last in, first out order for function calls?",
-    "file": "a0b0140e.mp3"
-  },
-  {
-    "order": 25,
-    "key": "6583b69c",
-    "role": "student",
-    "text": "the stack",
-    "file": "6583b69c.mp3"
   },
   {
     "order": 26,
@@ -190,10 +190,10 @@
   },
   {
     "order": 28,
-    "key": "43e78bb3",
+    "key": "9ef16bcb",
     "role": "coach",
-    "text": "Not quite - you said authentication. Let's separate authentication and authorization. What process decides which actions an authenticated user may perform? Is it authentication, or authorization?",
-    "file": "43e78bb3.mp3"
+    "text": "Not quite - you said authentication. Let's separate authorization and authentication. What process decides which actions an authenticated user may perform? Is it authorization, or authentication?",
+    "file": "9ef16bcb.mp3"
   },
   {
     "order": 29,

@@ -2,7 +2,7 @@ chloroplasts
 
 the vacuole
 
-nucleus
+cytoplasm
 
 mitochondria
 
@@ -12,9 +12,9 @@ the mitochondria
 
 authorization
 
-a cache
+the heap
 
-the stack
+a cache
 
 authentication
 

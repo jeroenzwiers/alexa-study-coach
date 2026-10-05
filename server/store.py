@@ -204,6 +204,10 @@ class Session:
     contrast_rounds: Counter = field(default_factory=Counter)
     pending_contrast: tuple | None = None
 
+    # Seeded for synthetic students so a demo repeats; None means the real
+    # module-level random, which is what a real student gets.
+    rng: random.Random | None = None
+
     # How the student is coping, not just how they are scoring - see adaptive.py.
     difficulty: int = 1
     scaffold: int = 0
@@ -318,7 +322,8 @@ SESSIONS: dict[str, Session] = {}
 
 # --- choosing what to ask next -------------------------------------------
 
-def _pick_by_difficulty(pool: list[str], study_set: StudySet, target: int) -> str:
+def _pick_by_difficulty(pool: list[str], study_set: StudySet, target: int,
+                        rng: random.Random | None = None) -> str:
     """The unasked card closest to the target level, ties broken at random.
 
     Not a filter: a session must never stall because the student's level has no
@@ -332,7 +337,19 @@ def _pick_by_difficulty(pool: list[str], study_set: StudySet, target: int) -> st
         cid for cid in pool
         if abs((study_set.card(cid).difficulty if study_set.card(cid) else 2) - target) == best
     ]
-    return random.choice(tied)
+    return (rng or random).choice(tied)
+
+
+# Only the demo. Synthetic students in general - the smoke client, the
+# generalization sweep, test_memory - want the real shuffle, because a test that
+# always draws the same cards in the same order stops testing the shuffle. An
+# earlier version of this seeded every synthetic session and broke two suites
+# whose scenarios depend on the draw.
+DEMO_MARKER = "__demo_"
+
+
+def _reproducible(student: str) -> bool:
+    return (student or "").startswith(DEMO_MARKER)
 
 
 def start_session(
@@ -345,7 +362,13 @@ def start_session(
 ) -> Session:
     study_set = STUDY_SETS[study_set_id]
     pool = [c.id for c in study_set.cards]
-    random.shuffle(pool)
+    # A demo session is reproducible. The recorded audio is keyed to the exact
+    # sentences the session speaks, and a reshuffled filler question changes the
+    # words and orphans a recording - so the shuffle and every later tie-break
+    # run off a seeded generator. Everyone else keeps the real shuffle: being
+    # asked the same cards in the same order every evening is not revision.
+    rng = random.Random(f"{study_set_id}:{length}:{student}") if _reproducible(student) else None
+    (rng or random).shuffle(pool)
 
     # Clamped at both ends. Alexa+ passes through whatever it understood the
     # student to have asked for, so a negative length is a thing that arrives,
@@ -359,6 +382,7 @@ def start_session(
         planned=planned,
         difficulty=max(adaptive.MIN_DIFFICULTY, min(adaptive.MAX_DIFFICULTY, difficulty)),
         returning=carried_pair is not None or carried_count > 0,
+        rng=rng,
     )
 
     # A confusion the student left open last time is not a fresh question - it is
@@ -418,7 +442,9 @@ def advance(session: Session) -> str | None:
             session.current = None
     else:
         study_set = STUDY_SETS[session.study_set_id]
-        session.current = _pick_by_difficulty(session.pool, study_set, session.difficulty)
+        session.current = _pick_by_difficulty(
+            session.pool, study_set, session.difficulty, session.rng
+        )
         session.pool.remove(session.current)
 
     session.asked_at = time.monotonic() if session.current else None

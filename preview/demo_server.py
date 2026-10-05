@@ -113,9 +113,13 @@ def learner_answer(
 
 async def run_cs_cutin(client, events: list[dict]) -> None:
     """Two beats on a second subject: the same pair mechanism, no new code."""
-    student = f"__demo_{uuid.uuid4().hex[:10]}__"
-    turn = None
-    for _ in range(32):
+    # Deterministic ids rather than a fresh uuid. A synthetic student's session
+    # is seeded on its own id, so searching the ids in order finds the same one
+    # every time - and with it the same questions, in the same order, in the
+    # same words. The recorded audio is keyed to those words.
+    student, turn = None, None
+    for n in range(64):
+        student = f"__demo_cs_{n}__"
         result = await client.call_tool(
             "start_practice",
             {"study_set_id": "computer_science_fundamentals", "length": 4, "student": student},
@@ -193,11 +197,26 @@ async def run_cs_cutin(client, events: list[dict]) -> None:
 # so asking for four delivers seven cards and stops on the resolution. Thirteen
 # delivered the same seven plus nine more with nothing left to say, which is
 # dead air on camera. Verified: the full arc in five runs out of five.
+def forget_demo_students() -> None:
+    """Start every run from nothing.
+
+    The ids are fixed so the session repeats word for word, and a fixed id keeps
+    its profile: by the second run the student is returning, is greeted
+    differently, and says different things. The recorded audio is keyed to the
+    words, so that is the difference between a pack that fits and one that does
+    not. These are scratch files for ids this file invented.
+    """
+    scratch = ROOT / "data" / "scratch"
+    for path in scratch.glob("__demo_*.json"):
+        path.unlink()
+
+
 async def run_demo() -> dict:
+    forget_demo_students()
     events: list[dict] = []
     # Marked synthetic (history.SYNTHETIC_MARKER): a rehearsal of the demo must
     # not add a pupil to the class report the demo goes on to show.
-    student = f"__demo_{uuid.uuid4().hex[:10]}__"
+    student = None
     contrast_seen = False
     first_mistake_seen = False
     contrast_started = False
@@ -215,7 +234,8 @@ async def run_demo() -> dict:
             })
 
             turn = None
-            for _ in range(32):
+            for n in range(64):
+                student = f"__demo_bio_{n}__"
                 result = await client.call_tool(
                     "start_practice",
                     {"study_set_id": "biology_cells", "length": 4, "student": student},

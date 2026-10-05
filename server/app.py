@@ -383,7 +383,7 @@ def _ask(session, study_set, card, number: int) -> tuple[str, list[str] | None, 
             confused = study_set.card(said_card)
             if confused is not None:
                 options = [_spoken(card.canonical), _spoken(confused.canonical)]
-                random.shuffle(options)
+                (session.rng or random).shuffle(options)
                 # Name the pair rather than pointing at it. "Those two" refers
                 # forward to concepts the sentence has not mentioned - the
                 # student has heard one of them, once, and has to hold the
@@ -401,7 +401,7 @@ def _ask(session, study_set, card, number: int) -> tuple[str, list[str] | None, 
         other = _distractor(study_set, card)
         if other is not None:
             options = [_spoken(card.canonical), _spoken(other.canonical)]
-            random.shuffle(options)
+            (session.rng or random).shuffle(options)
             return (
                 f"Question {number}. {card.question} Is it {options[0]}, or {options[1]}?",
                 options,
