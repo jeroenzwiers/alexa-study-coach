@@ -139,7 +139,7 @@ def group_segments(spans: list[tuple[float, float]], weights: list[int]) -> list
     return groups
 
 
-def split(role: str, manifest: list[dict], gap: float, floor: int) -> bool:
+def split(role: str, manifest: list[dict], gap: float, floor: int, tempo: float) -> bool:
     source = AUDIO / f"{role}.mp3"
     if not source.exists():
         print(f"  {role:9} no {source.name} yet - skipped")
@@ -158,13 +158,17 @@ def split(role: str, manifest: list[dict], gap: float, floor: int) -> bool:
     for span, entry in zip(spans, wanted):
         begin, end = span
         target = AUDIO / entry["file"]
-        subprocess.run(
-            [tool("ffmpeg"), "-hide_banner", "-loglevel", "error",
-             "-ss", f"{begin:.3f}", "-to", f"{end:.3f}", "-i", str(source),
-             "-c:a", "libmp3lame", "-b:a", "192k", str(target), "-y"],
-            check=True,
-        )
-    print(f"  {role:9} {len(wanted)} clips written")
+        command = [tool("ffmpeg"), "-hide_banner", "-loglevel", "error",
+                   "-ss", f"{begin:.3f}", "-to", f"{end:.3f}", "-i", str(source)]
+        if abs(tempo - 1.0) > 0.001:
+            # atempo resamples without touching pitch, which is the difference
+            # between a voice that talks faster and a voice on a sped-up tape.
+            command += ["-af", f"atempo={tempo:.3f}"]
+        command += ["-c:a", "libmp3lame", "-b:a", "192k", str(target), "-y"]
+        subprocess.run(command, check=True)
+    spoken = sum(e - b for b, e in spans) / tempo
+    note = f" at {tempo:.2f}x" if abs(tempo - 1.0) > 0.001 else ""
+    print(f"  {role:9} {len(wanted)} clips written{note}, {spoken:.0f} s of speech")
     return True
 
 
@@ -174,6 +178,11 @@ def main() -> int:
     parser.add_argument("--gap", type=float, default=0.30,
                         help="shortest quiet stretch to cut at; finer is better, "
                              "since the grouping puts the pieces back together")
+    parser.add_argument("--tempo", type=float, default=1.0,
+                        help="speed up the clips without changing pitch. ElevenLabs "
+                             "runs about 15 characters a second against Chrome's 19, "
+                             "so 1.26 brings a whole pack back to the length the "
+                             "video was cut for")
     parser.add_argument("--floor", type=int, default=-40,
                         help="dB below which audio counts as quiet")
     args = parser.parse_args()
@@ -184,7 +193,7 @@ def main() -> int:
     manifest = json.loads(path.read_text(encoding="utf-8"))
 
     roles = args.roles or sorted({m["role"] for m in manifest})
-    ok = all(split(role, manifest, args.gap, args.floor) for role in roles)
+    ok = all(split(role, manifest, args.gap, args.floor, args.tempo) for role in roles)
     print()
     print("The page uses whatever is there and falls back to the browser voice")
     print("for the rest, so a partial pack is fine.")
