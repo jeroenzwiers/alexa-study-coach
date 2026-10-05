@@ -524,17 +524,32 @@
         narratorPicker.disabled = false;
         voiceOn.disabled = false;
         if (!voiceChosenByHand) voiceOn.checked = true;
+        // Three different voices wherever the machine has three. Picking by
+        // index was not enough - a recording went out with the coach and the
+        // student on the same voice, and in a two-speaker dialogue that is the
+        // one thing the listener cannot be left to work out.
         fillOne(voicePicker, voices, 0);
-        // Index 1 when there is a second voice, so two installed voices are
-        // used by default rather than waiting to be asked for.
         fillOne(studentPicker, voices, 1);
-        // A third voice where the machine has one. Defaulting the narrator to
-        // index 0 gave it the coach's voice, so the opening sounded like the
-        // app talking about itself.
         fillOne(narratorPicker, voices, voices.length > 2 ? 2 : 1);
+        warnIfSame();
       }
       fillVoices();
       if (synth) synth.addEventListener("voiceschanged", fillVoices);
+
+      // Says so on the page when two roles share a voice, because the only
+      // other way to find out is to watch the recording back.
+      function warnIfSame() {
+        const pickers = [voicePicker, studentPicker, narratorPicker];
+        const used = pickers.map((p) => p.value);
+        for (const [i, picker] of pickers.entries()) {
+          const clash = used.some((v, j) => j !== i && v === used[i]);
+          picker.style.borderColor = clash ? "var(--coral)" : "var(--line)";
+          picker.title = clash ? "Another role is using this voice" : "";
+        }
+      }
+      for (const picker of [voicePicker, studentPicker, narratorPicker]) {
+        picker.addEventListener("change", warnIfSame);
+      }
 
       const speaking = () => Boolean(synth) && voiceOn.checked && !voicePicker.disabled;
       const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
