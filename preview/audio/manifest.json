@@ -64,10 +64,10 @@
   },
   {
     "order": 10,
-    "key": "0cbaced9",
+    "key": "1b792a30",
     "role": "coach",
-    "text": "That's right. Question 3. Where do most of the cell's chemical reactions take place?",
-    "file": "0cbaced9.mp3"
+    "text": "That's right - the vacuole. Question 3. Where do most of the cell's chemical reactions take place?",
+    "file": "1b792a30.mp3"
   },
   {
     "order": 11,
@@ -78,10 +78,10 @@
   },
   {
     "order": 12,
-    "key": "808bc445",
+    "key": "114b8258",
     "role": "coach",
-    "text": "That's right. Question 4. Which organelle captures light energy in a plant cell?",
-    "file": "808bc445.mp3"
+    "text": "That's right - in the cytoplasm. Question 4. Which organelle captures light energy in a plant cell?",
+    "file": "114b8258.mp3"
   },
   {
     "order": 13,
@@ -162,10 +162,10 @@
   },
   {
     "order": 24,
-    "key": "e8786465",
+    "key": "7d4ba14f",
     "role": "coach",
-    "text": "That's right. Question 3. What structure stores recently used data so future access can be faster?",
-    "file": "e8786465.mp3"
+    "text": "That's right - the heap. Question 3. What structure stores recently used data so future access can be faster?",
+    "file": "7d4ba14f.mp3"
   },
   {
     "order": 25,
@@ -176,10 +176,10 @@
   },
   {
     "order": 26,
-    "key": "d926e524",
+    "key": "bf13355a",
     "role": "coach",
-    "text": "That's right. Question 4. What process decides which actions an authenticated user may perform?",
-    "file": "d926e524.mp3"
+    "text": "That's right - a cache. Question 4. What process decides which actions an authenticated user may perform?",
+    "file": "bf13355a.mp3"
   },
   {
     "order": 27,

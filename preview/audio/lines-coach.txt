@@ -4,9 +4,9 @@ Let's revise The Cell. Question 1. Which organelle releases energy from glucose?
 
 Not quite - you said the chloroplasts. Chloroplasts capture energy from light; mitochondria release it from food. The answer is The mitochondria. Question 2. Which part of a plant cell stores cell sap and keeps the cell firm?
 
-That's right. Question 3. Where do most of the cell's chemical reactions take place?
+That's right - the vacuole. Question 3. Where do most of the cell's chemical reactions take place?
 
-That's right. Question 4. Which organelle captures light energy in a plant cell?
+That's right - in the cytoplasm. Question 4. Which organelle captures light energy in a plant cell?
 
 Not quite - you said the mitochondria. Let's separate the chloroplasts and the mitochondria. Which organelle captures light energy in a plant cell? Is it the chloroplasts, or the mitochondria?
 
@@ -20,9 +20,9 @@ Let's revise Computer Science Fundamentals. Question 1. What process verifies th
 
 Not quite - you said authorization. Authentication verifies identity; authorization decides which actions that identity may take. The answer is Authentication. Question 2. Which memory area stores dynamically allocated objects during a program's lifetime?
 
-That's right. Question 3. What structure stores recently used data so future access can be faster?
+That's right - the heap. Question 3. What structure stores recently used data so future access can be faster?
 
-That's right. Question 4. What process decides which actions an authenticated user may perform?
+That's right - a cache. Question 4. What process decides which actions an authenticated user may perform?
 
 Not quite - you said authentication. Let's separate authorization and authentication. What process decides which actions an authenticated user may perform? Is it authorization, or authentication?
 
