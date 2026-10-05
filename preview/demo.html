@@ -608,6 +608,8 @@
         cards = [];
         let lastTotal = 0;
         for (const event of data.events) {
+          // Exercised against the real server, deliberately not shown.
+          if (event.hidden) continue;
           // Only within one session: start_practice begins a new count, and
           // comparing a fresh session's total against the previous one's would
           // announce growth that never happened.

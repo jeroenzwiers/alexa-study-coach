@@ -14,10 +14,17 @@ let it run.
 
 ## The runtime, and how much to trust the number
 
-**Recorded take, 1 October: 2:48.** That is the only measured figure, and it was
-with the narration read aloud live. The narration is now spoken by a third
-synthesised voice at rate 1.06, saying the same 88 words, so expect something
-close to it - but record once and check before you rely on it.
+**Expected 2:52, and the number is now calibrated rather than guessed.** The
+5 October take ran 3:40: 220 s, of which only 22 s was silence. Measuring it
+against the harness model gave a scaling factor of 1.073 - the real voices run
+about seven per cent slower than modelled - and the per-block seconds behind
+every decision below come from that.
+
+Three changes got it from 3:40 to an expected 2:52: the speaking rates up about
+eight per cent, the gaps between cards down, and the three persistence cards
+taken out of the picture.
+
+Record once and check. The factor is from a single take.
 
 `harness/test_demo_browser.mjs` reports a duration per utterance. It is
 **modelled**, not heard: words divided by the speaking rate. It is good for
@@ -32,7 +39,15 @@ promises ticking, console clean.
 
 ## What is deliberately not in this video
 
-The class report - the one that aggregates confusions across everyone who
+**The persistence cards.** The server is still asked for the student's history
+and still greets them back - `harness/test_demo_golden.py` asserts both against
+a real run - but the three cards are not rendered. They cost 21 seconds of a
+three-minute video, and "it remembers the diagnosis, not the score" is a claim
+that reads perfectly well written down. Seeing a second subject work cannot be
+written down; it has to be watched. That is the trade, and it is why the
+computer science act survived and this did not.
+
+**The class report** - the one that aggregates confusions across everyone who
 studied a set and names which half of a distinction a group is missing. It is
 the strongest claim this project has about impact, and it is out, because the
 nine students behind it do not exist. They were seeded so the report had a
@@ -106,8 +121,6 @@ give a longer pause:
 | `CONTRAST_PROBE` | the mirror, both concepts named - **tick two**. The card is tagged **+2 questions to settle this pair**, and the counter goes from 4 of 4 to 5 of 6. Without that tag the jump reads as a broken counter; with it, it is the product deciding to spend two more questions on something it found |
 | `SIDE_B_MASTERED` | one side right. No resolution tag yet |
 | `SIDE_A_MASTERED · CONFUSION_RESOLVED` | both sides - **tick three**. Last card of the session; it ends on the good news |
-| two gold cards | settled for good, then "Welcome back" - the diagnosis outliving the session |
-| one more answer | the returning session's question, answered right. It is there so the greeting does not end on a question nobody answers |
 | `SECOND SUBJECT` | black card. Computer Science Fundamentals |
 | `QUESTION` | its own opening question, as the biology act has |
 | five more | authentication against authorization, drilled and closed the same way. The act runs its session to the end, so it stops on "that was the last one" and not on a question |

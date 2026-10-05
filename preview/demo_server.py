@@ -269,8 +269,15 @@ async def run_demo() -> dict:
                 "student_progress",
                 {"student": student, "study_set_id": "biology_cells"},
             )
+            # Kept in the run and out of the picture. The server really is asked
+            # for the student's history and really does greet them back, and
+            # harness/test_demo_golden.py asserts both against this event - but
+            # the three cards cost 21 seconds of a three-minute video, and the
+            # claim reads perfectly well in the written submission. `hidden`
+            # tells the shell not to render or speak it.
             events.append({
                 "kind": "persistence",
+                "hidden": True,
                 "state": "PERSISTED_STATE",
                 "text": next(
                     (block.text for block in progress.content if getattr(block, "type", None) == "text"),
@@ -283,7 +290,12 @@ async def run_demo() -> dict:
                 {"study_set_id": "biology_cells", "length": 1, "student": student},
             )
             restart_turn = payload(restarted)
-            events.append({"kind": "restart", "state": "PERSISTED_STATE", "turn": restart_turn})
+            events.append({
+                "kind": "restart",
+                "hidden": True,
+                "state": "PERSISTED_STATE",
+                "turn": restart_turn,
+            })
 
             answer = correct_answer(restart_turn.get("question", ""))
             result = await client.call_tool(
@@ -292,6 +304,7 @@ async def run_demo() -> dict:
             )
             events.append({
                 "kind": "answer",
+                "hidden": True,
                 "state": "ANSWER_RECEIVED",
                 "asked_question": restart_turn.get("question", ""),
                 "answer": answer,
