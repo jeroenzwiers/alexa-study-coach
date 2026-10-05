@@ -466,9 +466,14 @@
       const CLOSE = [
         { text: "A wrong answer isn't a score. It's evidence about what the student believes.", pause: 0 },
       ];
-      const NARRATOR = { pitch: 0.96, rate: 1.14 };
-      const COACH = { pitch: 1.0, rate: 1.22 };
-      const STUDENT = { pitch: 1.12, rate: 1.25 };
+      // No pitch shifting and only a light push on rate. The Web Speech pitch
+      // control is a crude resampling and it is audible - it was doing a job
+      // back when one installed voice had to cover two speakers, and three
+      // different voices do that job properly now. Rate above about 1.15
+      // starts to clip the ends of words on these voices.
+      const NARRATOR = { pitch: 1.0, rate: 1.08 };
+      const COACH = { pitch: 1.0, rate: 1.12 };
+      const STUDENT = { pitch: 1.0, rate: 1.12 };
 
       // Edge exposes online neural voices next to the dated local ones. On a
       // machine whose only installed voice is "Microsoft Zira Desktop", which
