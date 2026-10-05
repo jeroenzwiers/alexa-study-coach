@@ -77,6 +77,26 @@ await page.evaluateOnNewDocument(() => {
     },
   };
   Object.defineProperty(window, 'speechSynthesis', { value: fake, configurable: true });
+  // Headless Chrome has no audio device, so a real clip never reports that it
+  // ended. Report it instantly instead, and record that it was a clip rather
+  // than the browser voice.
+  window.__clips = [];
+  const RealAudio = window.Audio;
+  window.Audio = class {
+    constructor(src) {
+      this.src = src;
+      window.__clips.push(src);
+      this.listeners = {};
+      setTimeout(() => (this.listeners.ended || [])(), 1);
+    }
+    addEventListener(kind, fn) {
+      this.listeners[kind] = fn;
+    }
+    play() {
+      return Promise.resolve();
+    }
+  };
+  void RealAudio;
   Object.defineProperty(window, 'SpeechSynthesisUtterance', {
     value: FakeUtterance,
     configurable: true,
@@ -133,6 +153,7 @@ await page.waitForFunction(
 
 const after = await page.evaluate(() => ({
   speech: window.__speech,
+  clips: window.__clips,
   cards: [...document.querySelectorAll('#timeline .event')].map((el) => ({
     cls: el.className,
     label: (el.querySelector('.label') || { innerText: '' }).innerText,

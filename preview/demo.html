@@ -578,15 +578,28 @@
         if (missingClips.has(key)) return Promise.resolve(false);
         return new Promise((resolve) => {
           const audio = new Audio(`audio/${key}.mp3`);
-          audio.addEventListener("ended", () => resolve(true));
-          audio.addEventListener("error", () => {
-            missingClips.add(key);
-            resolve(false);
+          let settled = false;
+          let timer = 0;
+          const finish = (played) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            if (!played) missingClips.add(key);
+            resolve(played);
+          };
+          // A clip that never reports it finished would freeze the session
+          // mid-recording, which is worse than losing one line to the browser
+          // voice. Once the length is known, that length plus a second is the
+          // longest it can legitimately take; until then, five seconds.
+          timer = setTimeout(() => finish(false), 5000);
+          audio.addEventListener("loadedmetadata", () => {
+            if (settled || !isFinite(audio.duration)) return;
+            clearTimeout(timer);
+            timer = setTimeout(() => finish(true), audio.duration * 1000 + 1000);
           });
-          audio.play().catch(() => {
-            missingClips.add(key);
-            resolve(false);
-          });
+          audio.addEventListener("ended", () => finish(true));
+          audio.addEventListener("error", () => finish(false));
+          audio.play().catch(() => finish(false));
         });
       }
 

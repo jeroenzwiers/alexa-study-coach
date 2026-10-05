@@ -1,6 +1,6 @@
 # Study Coach Golden Demo Script
 
-**Target runtime:** about 2:50, measured 2:48 on the 1 October take. Hard limit 3:00 - judges are not required to watch past
+**Target runtime:** 2:54, from the length of the recorded clips. Hard limit 3:00 - judges are not required to watch past
 it. A simulated Alexa+ experience backed by the real MCP server.
 
 **The session talks. You don't, except at the two ends.** Every card speaks -
@@ -12,30 +12,25 @@ make room for the explaining, which is backwards.
 So your job is the opening and the close. In between you press the space bar and
 let it run.
 
-## The runtime, and how much to trust the number
+## The runtime
 
-**Expected 2:52, and the number is now calibrated rather than guessed.** The
-5 October take ran 3:40: 220 s, of which only 22 s was silence. Measuring it
-against the harness model gave a scaling factor of 1.073 - the real voices run
-about seven per cent slower than modelled - and the per-block seconds behind
-every decision below come from that.
+**Expected 2:54.** Every line is now a pre-recorded clip rather than a browser
+voice, so the length is the sum of 33 files plus the gaps the page inserts, and
+that is arithmetic rather than an estimate:
 
-Three changes got it from 3:40 to an expected 2:52: the speaking rates up about
-eight per cent, the gaps between cards down, and the three persistence cards
-taken out of the picture.
+| | |
+| --- | --- |
+| narrator, 5 clips | 25.1 s |
+| coach, 16 clips | 131.3 s |
+| student, 12 clips | 8.4 s |
+| gaps between cards | 9.7 s |
+| **total** | **2:54** |
 
-Record once and check. The factor is from a single take.
+Six seconds of margin. If that is too tight, re-split at a higher tempo -
+`--tempo 1.35` takes about twelve seconds off and still sounds unhurried.
 
-`harness/test_demo_browser.mjs` reports a duration per utterance. It is
-**modelled**, not heard: words divided by the speaking rate. It is good for
-telling whether a change made things longer or shorter, and it is not the
-runtime of the video. An earlier version of this file quoted 2:42 from that
-model, and from a run the harness had truncated before the second act finished.
-Both are fixed; neither number was ever real.
-
-What the harness does measure reliably: 37 utterances in the right order, no
-card without a voice, no student answer without a question before it, all three
-promises ticking, console clean.
+Record once and check anyway. Every number in this file has been wrong at least
+once.
 
 ## What is deliberately not in this video
 
