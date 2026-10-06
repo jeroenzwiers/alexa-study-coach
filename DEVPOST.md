@@ -20,6 +20,18 @@ Status of the parts that are not text:
   asks for. Not a logo: a frame of the running thing, carrying the whole arc on
   one screen — a wrong answer attributed to a named concept, the contrast
   question chosen rather than shuffled, and the pair closed.
+- **Image gallery** — `preview/gallery/`, five images at the same 3:2, cut from
+  the same recorded frames and named in the order they should be uploaded:
+
+  1. `1-the-claim.jpg` — the opening screen and what to watch for
+  2. `2-real-server.jpg` — the MCP connection: spec 2025-11-25, Streamable HTTP,
+     eight tools, no model on this path, grading 11 ms median
+  3. `3-confusion-named.jpg` — a wrong answer attributed to a named concept, and
+     the contrast question scheduled to settle the pair
+  4. `4-pair-closed.jpg` — the pair closed from both sides, and the handover to
+     a second subject
+  5. `5-second-subject.jpg` — the same machinery on authorization against
+     authentication, with all three watch-for items ticked
 
 ---
 
