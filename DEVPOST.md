@@ -12,7 +12,8 @@ Status of the two things the form needs that are not text:
   demonstrably that.
 - **Public repository** — <https://github.com/jeroenzwiers/alexa-study-coach>,
   MIT, reachable without signing in, and linked from the video description.
-- **Thumbnail** — `preview/devpost-thumbnail.jpg`, 1200×675. Not a logo: it is a
+- **Thumbnail** — `preview/devpost-thumbnail.jpg`, 1200×800 (the 3:2
+  Devpost asks for). Not a logo: it is a
   frame of the running thing, showing the one card that carries the whole claim
   — a wrong answer attributed to a named concept, the contrast question chosen
   rather than shuffled, and all three watch-for items ticked.
