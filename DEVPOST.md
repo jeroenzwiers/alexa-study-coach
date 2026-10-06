@@ -49,10 +49,10 @@ Study Coach
 It doesn't mark the answer wrong. It names the idea the student reached for instead, drills that one distinction until it holds, and remembers it next week if it doesn't.
 ```
 
-**Built with** (up to 25 tags)
+**Built with** (15 of the 25 allowed)
 
 ```
-python, mcp, model-context-protocol, streamable-http, oauth2, jwt, uvicorn, pydantic, jellyfish, mcp-apps, claude, javascript, puppeteer, ffmpeg
+python, mcp, model-context-protocol, streamable-http, oauth2, jwt, uvicorn, pydantic, jellyfish, mcp-apps, claude, javascript, puppeteer, ffmpeg, alexa
 ```
 
 **Try it out links**
