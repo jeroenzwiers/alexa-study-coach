@@ -143,28 +143,50 @@ def cuts_to_groups(spans, cuts):
     return groups
 
 
-def pull_back_short_openings(spans, cuts, texts, opener="That's right.", limit=0.9):
-    """Move a boundary back when the line after it should start short.
+def drop_a_stolen_opening(spans, cuts, max_extra=1.0):
+    """Move a boundary back one piece when it sat past the obvious break.
 
-    Weighing the pieces by length gets most boundaries right and can put one a
-    whole segment late, which leaves a clip ending with the opening of the next
-    line - heard as a second "That's right" inside a question. A line beginning
-    "That's right." has to begin with a short piece, and if it does not, the
-    piece before it belongs to this line rather than the one before.
+    Weighing the pieces by length puts a boundary close and sometimes one piece
+    late, and the clip then ends with the opening of the next line - heard as a
+    second "That's right" inside a question.
+
+    The test is narrow on purpose. Three broader attempts each repaired one line
+    and broke others: ranking pauses globally put boundaries inside sentences, a
+    pause bonus in the cost function cut a clip to half a second, and snapping
+    every boundary to its nearest biggest gap damaged the narrator. So a
+    boundary only moves when all of this holds:
+
+      - the biggest pause inside the group is clearly bigger than the one the
+        boundary sits on, by at least 50 ms
+      - it is exactly one piece earlier, not two
+      - that piece is under a second, which is the length of an opening phrase
+        rather than of anything a line ends with
+      - and the group is not the last, whose boundary is the end of the file
+
+    On this pack that is three lines out of sixteen, and none in the narrator or
+    the student.
     """
-    moved = 0
-    starts = [0] + list(cuts[:-1])
-    for index, text in enumerate(texts):
-        if index == 0 or not text.startswith(opener):
+    gaps = [spans[i + 1][0] - spans[i][1] for i in range(len(spans) - 1)]
+    moved = []
+    start = 0
+    for index in range(len(cuts) - 1):          # never the last group
+        end = cuts[index]
+        inner = [(gaps[j], j) for j in range(start, min(end, len(gaps)))]
+        start = end
+        if len(inner) < 2:
             continue
-        first = spans[starts[index]]
-        if first[1] - first[0] <= limit:
+        biggest, where = max(inner)
+        if where != end - 2:                    # must be exactly one piece back
             continue
-        if starts[index] - 1 <= (starts[index - 1] if index else 0):
-            continue                      # would leave the previous line empty
-        cuts[index - 1] -= 1
-        starts[index] -= 1
-        moved += 1
+        if biggest <= gaps[end - 1] + 0.05:
+            continue
+        extra = spans[end - 1][1] - spans[end - 1][0]
+        if extra > max_extra:
+            continue
+        if end - 1 <= (cuts[index - 1] if index else 0):
+            continue                            # would empty this group
+        cuts[index] = end - 1
+        moved.append(extra)
     return moved
 
 
@@ -187,10 +209,12 @@ def split(role: str, manifest: list[dict], gap: float, floor: int, tempo: float)
     if grouped is not None:
         if isinstance(grouped, tuple):
             spans, cuts = grouped
-            moved = pull_back_short_openings(found, cuts, [m["text"] for m in wanted])
+            moved = drop_a_stolen_opening(found, cuts)
             if moved:
                 spans = cuts_to_groups(found, cuts)
-                print(f"            {moved} boundary moved off a short opening")
+                total = sum(moved)
+                print(f"            {len(moved)} boundaries moved back"
+                      f" ({total:.1f}s of the next line returned)")
         else:
             spans = grouped
     if spans:
