@@ -62,7 +62,8 @@ def main() -> int:
             continue
 
         spans = pack.cut_points(source, 0.20, -40)
-        halves = pack.group_segments(spans, [len(verdict.split()), len(question.split())])
+        grouped = pack.group_segments(spans, [len(verdict), len(question)])
+        halves = grouped[0] if isinstance(grouped, tuple) else grouped
         if halves is None or len(halves) != 2:
             kept += 1
             print(f"  could not cut: {verdict[:48]}")

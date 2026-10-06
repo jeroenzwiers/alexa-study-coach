@@ -106,7 +106,7 @@ def group_segments(spans: list[tuple[float, float]], weights: list[int]) -> list
     if len(spans) < len(weights):
         return None
     if len(spans) == len(weights):
-        return spans
+        return spans, list(range(1, len(spans) + 1))
 
     total = sum(e - b for b, e in spans)
     share = [w / sum(weights) for w in weights]
@@ -132,11 +132,40 @@ def group_segments(spans: list[tuple[float, float]], weights: list[int]) -> list
         return winner
 
     _, cuts = solve(0, 0)
+    return cuts_to_groups(spans, cuts), cuts
+
+
+def cuts_to_groups(spans, cuts):
     groups, start = [], 0
     for end in cuts:
         groups.append((spans[start][0], spans[end - 1][1]))
         start = end
     return groups
+
+
+def pull_back_short_openings(spans, cuts, texts, opener="That's right.", limit=0.9):
+    """Move a boundary back when the line after it should start short.
+
+    Weighing the pieces by length gets most boundaries right and can put one a
+    whole segment late, which leaves a clip ending with the opening of the next
+    line - heard as a second "That's right" inside a question. A line beginning
+    "That's right." has to begin with a short piece, and if it does not, the
+    piece before it belongs to this line rather than the one before.
+    """
+    moved = 0
+    starts = [0] + list(cuts[:-1])
+    for index, text in enumerate(texts):
+        if index == 0 or not text.startswith(opener):
+            continue
+        first = spans[starts[index]]
+        if first[1] - first[0] <= limit:
+            continue
+        if starts[index] - 1 <= (starts[index - 1] if index else 0):
+            continue                      # would leave the previous line empty
+        cuts[index - 1] -= 1
+        starts[index] -= 1
+        moved += 1
+    return moved
 
 
 def split(role: str, manifest: list[dict], gap: float, floor: int, tempo: float) -> bool:
@@ -147,7 +176,32 @@ def split(role: str, manifest: list[dict], gap: float, floor: int, tempo: float)
 
     wanted = [m for m in manifest if m["role"] == role]
     found = cut_points(source, gap, floor)
-    spans = group_segments(found, [len(m["text"].split()) for m in wanted])
+    # Characters, not words. "That's right." is two words and thirteen
+    # characters, and it takes about as long to say as thirteen characters
+    # anywhere else - so weighing by words made it look six times shorter than
+    # it is, and a boundary landed a whole segment late. The clip then ended
+    # with the opening of the next line, which is how a second "That's right"
+    # got inside a question.
+    grouped = group_segments(found, [len(m["text"]) for m in wanted])
+    spans = None
+    if grouped is not None:
+        if isinstance(grouped, tuple):
+            spans, cuts = grouped
+            moved = pull_back_short_openings(found, cuts, [m["text"] for m in wanted])
+            if moved:
+                spans = cuts_to_groups(found, cuts)
+                print(f"            {moved} boundary moved off a short opening")
+        else:
+            spans = grouped
+    if spans:
+        total = sum(e - b for b, e in spans)
+        chars = sum(len(m["text"]) for m in wanted)
+        for span, entry in zip(spans, wanted):
+            want = len(entry["text"]) / chars * total
+            got = span[1] - span[0]
+            if abs(got - want) > max(1.0, want * 0.35):
+                print(f"            check: {got:.1f}s where {want:.1f}s expected"
+                      f" - {entry['text'][:40]}")
     if spans is None:
         print(f"  {role:9} FOUND {len(found)} pieces, NEED at least {len(wanted)} - nothing written")
         print(f"            the engine ran the lines together; try --gap {gap / 2:.2f}")
