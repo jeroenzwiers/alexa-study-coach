@@ -8,6 +8,10 @@ Built for the Alexa+ track of the **Build, Ship, Shape: Amazon Developer
 Hackathon**. It is an MCP server implementing spec version `2025-11-25` over
 Streamable HTTP.
 
+**Demo:** [a 2:53 walkthrough on YouTube](https://youtu.be/QTodUEiRStI). The
+learner's answers are scripted so the run repeats; every verdict, question and
+diagnosis in it came back from the server you can start below.
+
 ```
 ALEXA   : Question 2. Which organelle releases energy from glucose?
 STUDENT : "chloroplasts"
