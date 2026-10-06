@@ -80,11 +80,46 @@ Alexa+
 Open Source ($5,000) - MIT, public repository, and the whole thing: the server, the test harness, the content tooling and the friction log.
 ```
 
+**Open Source Mini Challenge — the required write-up**
+
+> A new MIT-licensed repository, created inside the hackathon window:
+> <https://github.com/jeroenzwiers/alexa-study-coach>, 59 commits between
+> 2 September and 6 October 2026.
+>
+> **What it is.** A self-hosted MCP server on spec 2025-11-25 over Streamable
+> HTTP that revises with a student by voice and, when they are wrong, names the
+> concept they reached for instead of the right one.
+>
+> **How it works.** Grading is nearest-neighbour attribution over the closed set
+> of answers in a study set, not a similarity threshold. We measured that no
+> threshold can work: a correct answer distorted by speech recognition scores
+> lower than a genuinely wrong one that happens to be spelled alike. Knowing
+> *which* wrong answer was given is what lets the server name a confusion,
+> deliberately schedule the mirrored question, and close the pair when both
+> sides come back right.
+>
+> **Why it matters as open source.** Everything a reader would need in order to
+> disbelieve us is in the repository. `LIMITATIONS.md` documents where the
+> grader does worse than its own test file reports and why the fix is
+> content-side. `FRICTION.md` is fifteen logged problems with the tools, written
+> down as they cost us something. The harness reproduces every figure in the
+> README. Three parts are reusable on their own: the OAuth 2.1 resource server,
+> the study-set verifier that checks generated content with the live grader, and
+> the audio-splitting tool that groups speech by expected length instead of
+> thresholding the pauses.
+
+**Contribution URL** and **Project Repository URL** are the same here, because
+the contribution *is* the new repository the rules allow:
+`https://github.com/jeroenzwiers/alexa-study-coach`. **GitHub username**:
+`jeroenzwiers`.
+
 AWS Builder is deliberately **not** claimed. Nothing in this project runs on
 AWS: the server is self-hosted, and the one AWS dependency we met — the private
 CodeArtifact repository the `alexa-ai` CLI lives in — we never got access to
-(friction log items 1 and 2). Claiming it would be a claim the code cannot show,
-and the rules allow one mini-prize anyway.
+(friction log items 1 and 2). Verified rather than assumed: nothing in
+`server/`, `tools/`, `harness/` or the dependency list imports or calls an AWS
+service — no boto3, no Bedrock, no SageMaker. Claiming it would be a claim the
+code cannot show, and the rules allow one mini-prize anyway.
 
 There is no hosted URL on purpose. The Alexa+ track asks for a server on the MCP
 specification; the rules point judges at the repository and the video, not at a
