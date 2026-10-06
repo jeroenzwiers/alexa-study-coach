@@ -23,3 +23,9 @@ preview/frames/
 preview/frames.txt
 preview/timeline.json
 preview/audio-track.m4a
+
+# Recordings and cut fragments: the pipeline rebuilds them, and one
+# 42MB screen capture already found its way in by accident.
+*.mp4
+*.webm
+*.m4a
