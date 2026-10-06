@@ -10,9 +10,9 @@ Status of the two things the form needs that are not text:
 - **Demo video** — <https://youtu.be/QTodUEiRStI>, 2:53, English. Must be set to
   **Public**; the rules ask for a publicly visible video and Unlisted is not
   demonstrably that.
-- **Public repository** — not yet. The MIT licence is already in place; the repo
-  has to be flipped from private, and the resulting URL then goes into the
-  YouTube description as well as here.
+- **Public repository** — <https://github.com/jeroenzwiers/alexa-study-coach>,
+  MIT, reachable without signing in. The URL still has to go into the YouTube
+  description.
 
 ---
 
