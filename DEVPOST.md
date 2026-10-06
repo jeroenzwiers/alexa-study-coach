@@ -82,7 +82,7 @@ Open Source ($5,000) - MIT, public repository, and the whole thing: the server, 
 
 **Open Source Mini Challenge — the required write-up**
 
-Paste **`DEVPOST_OPENSOURCE.md`**, not this file. The field takes the write-up
+Paste **`devpost/open-source.md`**, not this file. The field takes the write-up
 and nothing else; it is quoted below only so this page stays readable.
 
 > A new MIT-licensed repository, created inside the hackathon window:
@@ -133,13 +133,25 @@ a server anyone can start themselves.
 
 ## About the project
 
-**Do not paste this file.** The box takes the story and nothing else — no title,
-no field values, no closing line — so the story is also written out on its own as
-**`DEVPOST_STORY.md`**. Open that one, select all, paste. It is generated from
-what follows, so the two cannot drift apart:
+**Do not paste this file.** It carries the text of every field at once, so
+pasting it into any one box puts all the others in there too — which is exactly
+what happened, twice. Every box that takes prose has its own file in
+**`devpost/`**; open it, select all, paste:
+
+| Devpost field | file |
+| --- | --- |
+| About the project | `devpost/about-the-project.md` |
+| Open Source mini challenge, description | `devpost/open-source.md` |
+| [Optional] Feature Requests | `devpost/feature-requests.md` |
+| Feedback 1: which tools did you use | `devpost/feedback-1-what-we-used.md` |
+| Feedback 2: what worked well | `devpost/feedback-2-what-worked.md` |
+| [Optional] Friction Log | a URL, not text: <https://github.com/jeroenzwiers/alexa-study-coach/blob/main/FRICTION.md> |
+
+`devpost/about-the-project.md` is cut from the story below by this command, so
+the two cannot drift apart:
 
 ```
-python -c "import pathlib; s=pathlib.Path('DEVPOST.md').read_text(encoding='utf-8');   pathlib.Path('DEVPOST_STORY.md').write_text(s[s.index('## Inspiration'):s.index(chr(10)+'---'+chr(10)+chr(10)+'*End of the')].rstrip()+chr(10), encoding='utf-8')"
+python -c "import pathlib; s=pathlib.Path('DEVPOST.md').read_text(encoding='utf-8');   pathlib.Path('devpost/about-the-project.md').write_text(s[s.index('## Inspiration'):s.index(chr(10)+'---'+chr(10)+chr(10)+'*End of the')].rstrip()+chr(10), encoding='utf-8')"
 ```
 
 ---
