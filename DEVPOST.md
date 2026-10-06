@@ -82,6 +82,9 @@ Open Source ($5,000) - MIT, public repository, and the whole thing: the server, 
 
 **Open Source Mini Challenge — the required write-up**
 
+Paste **`DEVPOST_OPENSOURCE.md`**, not this file. The field takes the write-up
+and nothing else; it is quoted below only so this page stays readable.
+
 > A new MIT-licensed repository, created inside the hackathon window:
 > <https://github.com/jeroenzwiers/alexa-study-coach>, 59 commits between
 > 2 September and 6 October 2026.
