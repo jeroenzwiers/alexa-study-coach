@@ -145,6 +145,9 @@ what happened, twice. Every box that takes prose has its own file in
 | [Optional] Feature Requests | `devpost/feature-requests.md` |
 | Feedback 1: which tools did you use | `devpost/feedback-1-what-we-used.md` |
 | Feedback 2: what worked well | `devpost/feedback-2-what-worked.md` |
+| Feedback 3: what needs work | `devpost/feedback-3-what-needs-work.md` |
+| Feedback 4: onboarding | `devpost/feedback-4-onboarding.md` |
+| Feedback 5: would you build again | `devpost/feedback-5-again.md` |
 | [Optional] Friction Log | a URL, not text: <https://github.com/jeroenzwiers/alexa-study-coach/blob/main/FRICTION.md> |
 
 `devpost/about-the-project.md` is cut from the story below by this command, so
