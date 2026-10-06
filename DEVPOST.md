@@ -148,6 +148,7 @@ what happened, twice. Every box that takes prose has its own file in
 | Feedback 3: what needs work | `devpost/feedback-3-what-needs-work.md` |
 | Feedback 4: onboarding | `devpost/feedback-4-onboarding.md` |
 | Feedback 5: would you build again | `devpost/feedback-5-again.md` |
+| AWS Builder write-up (required even when answering No) | `devpost/aws-builder-not-claimed.md` |
 | [Optional] Friction Log | a URL, not text: <https://github.com/jeroenzwiers/alexa-study-coach/blob/main/FRICTION.md> |
 
 `devpost/about-the-project.md` is cut from the story below by this command, so
