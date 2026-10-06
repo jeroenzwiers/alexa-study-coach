@@ -11,8 +11,11 @@ Status of the two things the form needs that are not text:
   **Public**; the rules ask for a publicly visible video and Unlisted is not
   demonstrably that.
 - **Public repository** — <https://github.com/jeroenzwiers/alexa-study-coach>,
-  MIT, reachable without signing in. The URL still has to go into the YouTube
-  description.
+  MIT, reachable without signing in, and linked from the video description.
+- **Thumbnail** — `preview/devpost-thumbnail.jpg`, 1200×675. Not a logo: it is a
+  frame of the running thing, showing the one card that carries the whole claim
+  — a wrong answer attributed to a named concept, the contrast question chosen
+  rather than shuffled, and all three watch-for items ticked.
 
 ---
 
